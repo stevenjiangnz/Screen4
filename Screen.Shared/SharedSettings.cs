@@ -9,6 +9,8 @@ namespace Screen.Shared
     public class SharedSettings
     {
         public string? BasePath { get; set; }
-        public string? SymbolFileName { get; set; }
+        public string? Symbol300FileName { get; set; }
+        public string? SymbolFullFileName { get; set; }
+
     }
 }

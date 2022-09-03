@@ -14,7 +14,9 @@ namespace Screen.Shared
             if (appSettings != null)
             {
                 settings.BasePath = PathHelper.FixPathSuffix(appSettings["BasePath"]);
-                settings.SymbolFileName = appSettings["SymbolFileName"];
+                settings.Symbol300FileName = appSettings["Symbol300FileName"];
+                settings.SymbolFullFileName = appSettings["SymbolFullFileName"];
+
             }
 
             return settings;
