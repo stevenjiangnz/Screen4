@@ -1,12 +1,10 @@
-﻿using System;
+﻿// See https://aka.ms/new-console-template for more information
 
-namespace ScreenProcess
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
-    }
-}
+using Screen.Shared;
+
+Console.WriteLine("Hello, World!");
+
+SharedSettings settings = AppGlobal.LoadConfig();
+
+
+Console.WriteLine("Hello, World!");
