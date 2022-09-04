@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.ComponentModel;
+using System.Configuration;
 using Screen.Utils;
 
 namespace Screen.Shared
@@ -14,9 +15,19 @@ namespace Screen.Shared
             if (appSettings != null)
             {
                 settings.BasePath = PathHelper.FixPathSuffix(appSettings["BasePath"]);
-                settings.Symbol300FileName = appSettings["Symbol300FileName"];
+                settings.TickerPath = appSettings["TickerPath"];
                 settings.SymbolFullFileName = appSettings["SymbolFullFileName"];
-
+            }
+            
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TickerEmailAccount")) &&
+                !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TickerEmailPWD")))
+            {
+                settings.TickerEmailAccount = Environment.GetEnvironmentVariable("TickerEmailAccount");
+                settings.TickerEmailPWD = Environment.GetEnvironmentVariable("TickerEmailPWD");
+            }
+            else
+            {
+                throw new Exception("missing Ticker Email Account or PWD");
             }
 
             return settings;

@@ -10,4 +10,8 @@
     <PackageReference Include="CsvHelper" Version="28.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
+  </ItemGroup>
+
 </Project>

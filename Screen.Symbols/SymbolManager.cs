@@ -10,7 +10,7 @@ namespace Screen.Symbols
 {
     public class SymbolManager
     {
-        public List<SymbolEntity> LoadFullSymbolList(SharedSettings settings)
+        public List<SymbolEntity> LoadFullSymbolList(SharedSettings settings, int? takeCount)
         {
             List<SymbolEntity> symbolList = new List<SymbolEntity>();
 
@@ -22,7 +22,14 @@ namespace Screen.Symbols
                     csv.Context.RegisterClassMap<SymbolEntityMap>();
                     var records = csv.GetRecords<SymbolEntity>();
 
-                    symbolList = records.ToList();
+                    if (takeCount.HasValue)
+                    {
+                        symbolList = records.OrderByDescending(s => s.MarketCap).Take(takeCount.Value).ToList();
+                    }
+                    else
+                    {
+                        symbolList = records.OrderByDescending(s => s.MarketCap).ToList();
+                    }
                 }
             }
 
