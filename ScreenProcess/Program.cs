@@ -6,7 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Screen.Entity;
 using Screen.Utils;
 using Serilog;
-
+using CommandLine;
+using ScreenProcess;
 
 // Build a config object, using env vars and JSON providers.
 IConfiguration config = new ConfigurationBuilder()
@@ -18,17 +19,46 @@ IConfiguration config = new ConfigurationBuilder()
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.File("scrren4.log")
-    .WriteTo.Console()
+    .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
     .CreateLogger();
 
-
-Log.Information("this is information");
+//Log.Information("Start Process...");
 
 SharedSettings settings = config.GetRequiredSection("Settings").Get<SharedSettings>();
 
+Log.Debug($"args: {ObjectHelper.ToJsonString(args)}");
 
-//TickerManager tickerManager = new TickerManager();
+return Parser.Default.ParseArguments<TickerOptions, CommitOptions, CloneOptions>(args)
+    .MapResult(
+      (TickerOptions opts) => RunTickerAndReturnExitCode(opts),
+      (CommitOptions opts) => RunCommitAndReturnExitCode(opts),
+      (CloneOptions opts) => RunCloneAndReturnExitCode(opts),
+      errs => 1);
 
-//tickerManager.LoadTickerFromEmail(settings);
+int RunTickerAndReturnExitCode(TickerOptions opts){
+    
+    if (opts.All)
+    {
+        Log.Information("about to load all tickers (from day 1)");
+    } else
+    {
+        Log.Information($"about to load tickers for the last {opts.Days} days");
+    }
+    
+    return 0;
+}
 
-Console.WriteLine("finsihed...");
+
+int RunCommitAndReturnExitCode(CommitOptions opts)
+{
+    Console.WriteLine("Commit");
+    return 0;
+}
+
+int RunCloneAndReturnExitCode(CloneOptions opts)
+{
+    Console.WriteLine("Clone");
+    return 0;
+}
+
+
