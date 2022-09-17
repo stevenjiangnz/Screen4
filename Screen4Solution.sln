@@ -22,6 +22,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Screen.Shared", "Screen.Shared\Screen.Shared.csproj", "{608C5B74-57E1-433F-B202-29182E71709B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{7551364A-0497-496B-8BA1-168B37005858}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{9179E9AF-EEC4-4D64-B143-CFFF7851723F}"
 	ProjectSection(SolutionItems) = preProject

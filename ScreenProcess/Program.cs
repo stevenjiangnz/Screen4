@@ -9,18 +9,13 @@ using Screen.Utils;
 
 // Build a config object, using env vars and JSON providers.
 IConfiguration config = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json", optional: true)
     .AddEnvironmentVariables()
     .Build();
-
 
 SharedSettings settings = config.GetRequiredSection("Settings").Get<SharedSettings>();
 
 Console.WriteLine("email: " + ObjectHelper.ToJsonString(settings));
-
-//TickerManager tickManager = new TickerManager();
-
-//tickManager.LoadTickerFromEmail(settings);
-
 
 Console.WriteLine("finsihed...");
