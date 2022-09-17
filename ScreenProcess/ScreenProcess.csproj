@@ -8,11 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Screen.Shared\Screen.Shared.csproj" />
+    <ProjectReference Include="..\ScreenTicks\Screen.Ticks.csproj" />
   </ItemGroup>
 
 </Project>

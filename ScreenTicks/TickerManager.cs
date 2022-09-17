@@ -22,31 +22,34 @@ namespace Screen.Ticks
                 foreach (var uid in inbox.Search(SearchQuery.All))
                 {
                     var message = inbox.GetMessage(uid);
-                    if (message.Subject.IndexOf("Daily Historical Data") >= 0)
-                    {
-                        foreach (MimeEntity attachment in message.Attachments)
-                        {
-                            //var fileName = localInboxFolder + attachment.ContentDisposition?.FileName ?? attachment.ContentType.Name;
-                            var fileName = "c:\\data" + attachment.ContentDisposition?.FileName ?? attachment.ContentType.Name;
 
-                            using (var stream = File.Create(fileName))
-                            {
-                                if (attachment is MessagePart)
-                                {
-                                    var rfc822 = (MessagePart)attachment;
-                                    rfc822.Message.WriteTo(stream);
-                                }
-                                else
-                                {
-                                    var part = (MimePart)attachment;
-                                    part.Content.DecodeTo(stream);
-                                }
-                            }
-                            //fileNames.Add(fileName);
-                        }
-                    }
+                    Console.WriteLine($"Uid: {uid.ToString()}, Subject: {message.Subject},  Time: {DateTime.Now.ToLongTimeString()}" );
 
-                    inbox.AddFlags(uid, MessageFlags.Seen, true);
+                    //if (message.Subject.IndexOf("Daily Historical Data") >= 0)
+                    //{
+                    //    foreach (MimeEntity attachment in message.Attachments)
+                    //    {
+                    //        //var fileName = localInboxFolder + attachment.ContentDisposition?.FileName ?? attachment.ContentType.Name;
+                    //        var fileName = "c:\\data" + attachment.ContentDisposition?.FileName ?? attachment.ContentType.Name;
+
+                    //        using (var stream = File.Create(fileName))
+                    //        {
+                    //            if (attachment is MessagePart)
+                    //            {
+                    //                var rfc822 = (MessagePart)attachment;
+                    //                rfc822.Message.WriteTo(stream);
+                    //            }
+                    //            else
+                    //            {
+                    //                var part = (MimePart)attachment;
+                    //                part.Content.DecodeTo(stream);
+                    //            }
+                    //        }
+                    //        //fileNames.Add(fileName);
+                    //    }
+                    //}
+
+                    //inbox.AddFlags(uid, MessageFlags.Seen, true);
                 }
 
                 client.Disconnect(true);
