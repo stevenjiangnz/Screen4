@@ -8,22 +8,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="App.config" />
+    <None Remove="appsettings.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="App.config">
+    <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
     <ProjectReference Include="..\Screen.Shared\Screen.Shared.csproj" />
+    <ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
     <ProjectReference Include="..\ScreenTicks\Screen.Ticks.csproj" />
   </ItemGroup>
 

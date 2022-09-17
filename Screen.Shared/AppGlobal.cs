@@ -18,7 +18,9 @@ namespace Screen.Shared
                 settings.TickerPath = appSettings["TickerPath"];
                 settings.SymbolFullFileName = appSettings["SymbolFullFileName"];
             }
-            
+
+            Console.WriteLine($"setting: {ObjectHelper.ToJsonString(settings)}");
+
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TickerEmailAccount")) &&
                 !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TickerEmailPWD")))
             {

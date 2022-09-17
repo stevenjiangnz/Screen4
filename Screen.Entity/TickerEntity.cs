@@ -55,7 +55,5 @@ namespace Screen.Entity
         {
             return $"{this.T},{this.P},{this.O},{this.H},{this.L},{this.C},{this.V}";
         }
-
     }
-
 }
