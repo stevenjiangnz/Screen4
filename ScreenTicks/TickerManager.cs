@@ -4,13 +4,15 @@ using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
 using Screen.Shared;
-
+using Screen.Utils;
+using Serilog;
 namespace Screen.Ticks
 {
     public class TickerManager
     {
         public void LoadTickerFromEmail(SharedSettings settings)
         {
+            Log.Debug($"LoadTickerFromEmail {ObjectHelper.ToJsonString(settings)}");
             using (var client = new ImapClient())
             {
                 client.Connect("imap.gmail.com", 993, true);

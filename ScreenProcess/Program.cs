@@ -5,6 +5,7 @@ using Screen.Ticks;
 using Microsoft.Extensions.Configuration;
 using Screen.Entity;
 using Screen.Utils;
+using Serilog;
 
 
 // Build a config object, using env vars and JSON providers.
@@ -14,8 +15,20 @@ IConfiguration config = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.File("scrren4.log")
+    .WriteTo.Console()
+    .CreateLogger();
+
+
+Log.Information("this is information");
+
 SharedSettings settings = config.GetRequiredSection("Settings").Get<SharedSettings>();
 
-Console.WriteLine("email: " + ObjectHelper.ToJsonString(settings));
+
+//TickerManager tickerManager = new TickerManager();
+
+//tickerManager.LoadTickerFromEmail(settings);
 
 Console.WriteLine("finsihed...");
