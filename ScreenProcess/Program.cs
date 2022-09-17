@@ -3,7 +3,7 @@
 using Screen.Shared;
 using Screen.Ticks;
 
-SharedSettings settings = AppGlobal.LoadConfig();
+//SharedSettings settings = AppGlobal.LoadConfig();
 
 //TickerManager tickManager = new TickerManager();
 
