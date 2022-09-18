@@ -2,7 +2,7 @@
   "profiles": {
     "ScreenProcess": {
       "commandName": "Project",
-      "commandLineArgs": "ticker",
+      "commandLineArgs": "ticker -a",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

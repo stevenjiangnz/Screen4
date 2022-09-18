@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Screen.Test": {
+      "commandName": "Project"
+    }
+  }
+}

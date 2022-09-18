@@ -16,4 +16,5 @@ docker build -t $IMAGE .
 
 
 
-# docker run --rm -e Settings__TickerEmailAccount=$Settings__TickerEmailAccount -e Settings__TickerEmailPWD=$Settings__TickerEmailPWD screen4
+# docker run --rm -e Settings__TickerEmailAccount=$Settings__TickerEmailAccount -e Settings__TickerEmailPWD=$Settings__TickerEmailPWD screen4 ticker
+# winpty docker run -it --rm -v /$(pwd)/data:/data -e Settings__TickerEmailAccount=$Settings__TickerEmailAccount -e Settings__TickerEmailPWD=$Settings__TickerEmailPWD screen4

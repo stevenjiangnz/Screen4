@@ -15,7 +15,15 @@ namespace Screen.Test.Ticks
         {
             TickerManager manager = new TickerManager();
 
-            SharedSettings settings = AppGlobal.LoadConfig();
+
+            SharedSettings settings = new SharedSettings()
+            {
+                BasePath = "c:\\data",
+                TickerEmailAccount = Environment.GetEnvironmentVariable("Settings__TickerEmailAccount", EnvironmentVariableTarget.Machine),
+                TickerEmailPWD = Environment.GetEnvironmentVariable("Settings__TickerEmailPWD", EnvironmentVariableTarget.Machine),
+                TickerPath = "tickers",
+                SymbolFullFileName = "Fulllist.csv"
+            };
 
 
             manager.LoadTickerFromEmail(settings);

@@ -18,7 +18,7 @@ IConfiguration config = new ConfigurationBuilder()
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .WriteTo.File("scrren4.log")
+    .WriteTo.File("/data/logs/screen4.log")
     .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
     .CreateLogger();
 
@@ -28,23 +28,31 @@ SharedSettings settings = config.GetRequiredSection("Settings").Get<SharedSettin
 
 Log.Debug($"args: {ObjectHelper.ToJsonString(args)}");
 
-return Parser.Default.ParseArguments<TickerOptions, CommitOptions, CloneOptions>(args)
+Parser.Default.ParseArguments<TickerOptions, CommitOptions, CloneOptions>(args)
     .MapResult(
       (TickerOptions opts) => RunTickerAndReturnExitCode(opts),
       (CommitOptions opts) => RunCommitAndReturnExitCode(opts),
       (CloneOptions opts) => RunCloneAndReturnExitCode(opts),
       errs => 1);
 
-int RunTickerAndReturnExitCode(TickerOptions opts){
-    
+// Prepare to get out
+Console.WriteLine("Press Enter to exit");
+Console.ReadLine();
+
+int RunTickerAndReturnExitCode(TickerOptions opts)
+{
+
+    TickerManager tickerManager = new TickerManager();
+
     if (opts.All)
     {
-        Log.Information("about to load all tickers (from day 1)");
-    } else
-    {
-        Log.Information($"about to load tickers for the last {opts.Days} days");
+        tickerManager.LoadTickerFromEmail(settings);
     }
-    
+    else
+    {
+        tickerManager.LoadTickerFromEmail(settings, opts.Days);
+    }
+
     return 0;
 }
 
