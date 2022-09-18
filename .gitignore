@@ -61,7 +61,6 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
-resources/data/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -400,3 +399,4 @@ FodyWeavers.xsd
 
 
 **/appsettings.Development.json
+**/*_day.txt
