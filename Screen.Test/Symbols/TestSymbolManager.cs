@@ -13,7 +13,9 @@ namespace Screen.Test.Symbols
             SharedSettings settings = new SharedSettings()
             {
                 BasePath = "c:\\data",
-                SymbolFullFileName = "Fulllist.csv"
+                SymbolFullFileName = "Fulllist.csv",
+                TickerProcessedPath = "tickers_processed"
+
             };
 
             var result = manager.LoadFullSymbolList(settings, null);

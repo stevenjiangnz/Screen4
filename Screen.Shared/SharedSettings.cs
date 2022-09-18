@@ -10,6 +10,7 @@ namespace Screen.Shared
     {
         public string? BasePath { get; set; }
         public string? TickerPath { get; set; }
+        public string? TickerProcessedPath { get; set; }
         public string? SymbolFullFileName { get; set; }
         public string? TickerEmailAccount { get; set; }
         public string? TickerEmailPWD { get; set; }

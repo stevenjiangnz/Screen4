@@ -39,6 +39,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
 		<ProjectReference Include="..\Screen.Shared\Screen.Shared.csproj" />
+		<ProjectReference Include="..\Screen.Symbols\Screen.Symbols.csproj" />
 		<ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
 		<ProjectReference Include="..\ScreenTicks\Screen.Ticks.csproj" />
 	</ItemGroup>

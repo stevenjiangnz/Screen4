@@ -8,6 +8,7 @@ using Screen.Utils;
 using Serilog;
 using CommandLine;
 using ScreenProcess;
+using Screen.Symbols;
 
 // Build a config object, using env vars and JSON providers.
 IConfiguration config = new ConfigurationBuilder()
@@ -28,38 +29,69 @@ SharedSettings settings = config.GetRequiredSection("Settings").Get<SharedSettin
 
 Log.Debug($"args: {ObjectHelper.ToJsonString(args)}");
 
-Parser.Default.ParseArguments<TickerOptions, CommitOptions, CloneOptions>(args)
+Parser.Default.ParseArguments<TickerOptions, ProcessOptions, CloneOptions>(args)
     .MapResult(
       (TickerOptions opts) => RunTickerAndReturnExitCode(opts),
-      (CommitOptions opts) => RunCommitAndReturnExitCode(opts),
+      (ProcessOptions opts) => RunProcessAndReturnExitCode(opts),
       (CloneOptions opts) => RunCloneAndReturnExitCode(opts),
       errs => 1);
 
 // Prepare to get out
-Console.WriteLine("Press Enter to exit");
-Console.ReadLine();
+//Console.WriteLine("Press Enter to exit");
+//Console.ReadLine();
 
 int RunTickerAndReturnExitCode(TickerOptions opts)
 {
-
-    TickerManager tickerManager = new TickerManager();
-
-    if (opts.All)
+    try
     {
-        tickerManager.LoadTickerFromEmail(settings);
-    }
-    else
+        SymbolManager symbolManager = new SymbolManager();
+        var result = symbolManager.LoadFullSymbolList(settings, null);
+
+        TickerManager tickerManager = new TickerManager();
+
+        if (opts.All)
+        {
+            tickerManager.LoadTickerFromEmail(settings);
+        }
+        else
+        {
+            tickerManager.LoadTickerFromEmail(settings, opts.Days);
+        }
+
+    } catch (Exception ex)
     {
-        tickerManager.LoadTickerFromEmail(settings, opts.Days);
+        Log.Error(ex, "Error in loading tickers");
+        return 1;
     }
 
     return 0;
 }
 
 
-int RunCommitAndReturnExitCode(CommitOptions opts)
+int RunProcessAndReturnExitCode(ProcessOptions opts)
 {
-    Console.WriteLine("Commit");
+    try
+    {
+        SymbolManager symbolManager = new SymbolManager();
+
+        var result = symbolManager.LoadFullSymbolList(settings, null);
+        Log.Debug($"Loaded symbol list {result.Count}.");
+
+        TickerManager tickerManager = new TickerManager();
+
+        if (opts.All)
+        {
+            tickerManager.ProcessTickersFromDownload(settings, result);
+        } else
+        {
+            tickerManager.ProcessTickersFromDownload(settings, result, opts.Days);
+        }
+    } catch (Exception ex)
+    {
+        Log.Error(ex, "Error in processing tickers");
+        return 1;
+    }
+
     return 0;
 }
 
