@@ -24,29 +24,38 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestLoadTickerFromEmail()
         {
-            TickerManager manager = new TickerManager();
+            TickerManager manager = new TickerManager(_settings);
 
-            manager.LoadTickerFromEmail(_settings);
+            manager.LoadTickerFromEmail();
         }
 
         [Fact]
         public void TestProcessTickersFromDownload()
         {
-            SymbolManager symbolManager = new SymbolManager();
+            SymbolManager symbolManager = new SymbolManager(_settings);
 
-            var result = symbolManager.LoadFullSymbolList(_settings, null);
+            var result = symbolManager.LoadFullSymbolList(null);
 
-            TickerManager manager = new TickerManager();
+            TickerManager manager = new TickerManager(_settings);
 
-            manager.ProcessTickersFromDownload(_settings, result, 5);
+            manager.ProcessTickersFromDownload(result, 5);
         }
 
         [Fact]
         public void TestGetTickerFileList()
         {
-            TickerManager manager = new TickerManager();
+            TickerManager manager = new TickerManager(_settings);
 
-            var result = manager.GetTickerFileList(_settings, 7000);
+            var result = manager.GetTickerFileList(7000);
+
+        }
+
+        [Fact]
+        public void TestGetTickerListByCode()
+        {
+            TickerManager manager = new TickerManager(_settings);
+
+            var result = manager.GetTickerListByCode("CCL");
 
         }
     }

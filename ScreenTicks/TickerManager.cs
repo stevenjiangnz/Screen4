@@ -12,17 +12,23 @@ namespace Screen.Ticks
 {
     public class TickerManager
     {
+        private SharedSettings _settings;
 
-        public void ProcessTickers(SharedSettings settings, IList<SymbolEntity> symbolList, int? loadDays = null)
+        public TickerManager(SharedSettings settings)
         {
-            LoadTickerFromEmail(settings, loadDays);
-
-            ProcessTickersFromDownload(settings, symbolList);
+            _settings = settings;
         }
 
-        public void LoadTickerFromEmail(SharedSettings settings, int? loadDays = null)
+        public void ProcessTickers(IList<SymbolEntity> symbolList, int? loadDays = null)
         {
-            Log.Debug($"in LoadTickerFromEmail... basepath: {settings.BasePath}");
+            LoadTickerFromEmail(loadDays);
+
+            ProcessTickersFromDownload(symbolList);
+        }
+
+        public void LoadTickerFromEmail(int? loadDays = null)
+        {
+            Log.Debug($"in LoadTickerFromEmail... basepath: {_settings.BasePath}");
             using (var client = new ImapClient())
             {
                 int downloadFiles = 0;
@@ -30,7 +36,7 @@ namespace Screen.Ticks
                 client.CheckCertificateRevocation = false;
                 Log.Information("About to connect to email...");
                 client.Connect("imap.gmail.com", 993, true);
-                client.Authenticate(settings.TickerEmailAccount, settings.TickerEmailPWD);
+                client.Authenticate(_settings.TickerEmailAccount, _settings.TickerEmailPWD);
 
                 Log.Information("Successfully connected to email.");
 
@@ -71,7 +77,7 @@ namespace Screen.Ticks
                                     year = fileName.Substring(fileName.IndexOf("_") + 1, 4);
                                 }
 
-                                var tickerDir = Path.Combine(Path.Combine(settings.BasePath, settings.TickerPath), year);
+                                var tickerDir = Path.Combine(Path.Combine(_settings.BasePath, _settings.TickerPath), year);
                                 Directory.CreateDirectory(tickerDir);
 
                                 fileName = Path.Combine(tickerDir, fileName);
@@ -117,9 +123,9 @@ namespace Screen.Ticks
             }
         }
 
-        public void ProcessTickersFromDownload(SharedSettings settings, IList<SymbolEntity> symbolList, int? days = null)
+        public void ProcessTickersFromDownload(IList<SymbolEntity> symbolList, int? days = null)
         {
-            Log.Debug($"in ProcessTickersFromDownload... basepath: {settings.BasePath}, symbols : {symbolList.Count}");
+            Log.Debug($"in ProcessTickersFromDownload... basepath: {_settings.BasePath}, symbols : {symbolList.Count}");
 
             Dictionary<string, IList<TickerEntity>> symbolTickers = new Dictionary<string, IList<TickerEntity>>();
 
@@ -129,7 +135,7 @@ namespace Screen.Ticks
                 symbolTickers.Add(symbol.Code, new List<TickerEntity>());
             }
 
-            var tickerFileList = GetTickerFileList(settings, days);
+            var tickerFileList = GetTickerFileList(days);
 
             foreach (string file in tickerFileList)
             {
@@ -157,18 +163,18 @@ namespace Screen.Ticks
 
             foreach (string code in symbolTickers.Keys)
             {
-                SaveProcessedTickets(settings, code, symbolTickers[code]);
+                SaveProcessedTickets(code, symbolTickers[code]);
             }
 
             Log.Information($"Processed {tickerFileList.Count} files into to individual code file.");
         }
 
 
-        public void SaveProcessedTickets(SharedSettings settings, string code, IList<TickerEntity> tickerEntityList)
+        public void SaveProcessedTickets(string code, IList<TickerEntity> tickerEntityList)
         {
             try
             {
-                var processedFolder = Path.Combine(settings.BasePath, settings.TickerProcessedPath);
+                var processedFolder = Path.Combine(_settings.BasePath, _settings.TickerProcessedPath);
                 Directory.CreateDirectory(processedFolder);
 
                 string filePath = Path.Combine(processedFolder, code + "_day.txt");
@@ -208,12 +214,12 @@ namespace Screen.Ticks
         }
 
 
-        public IList<string> GetTickerFileList(SharedSettings settings, int? days)
+        public IList<string> GetTickerFileList(int? days)
         {
             IList<string> fileList = new List<string>();
             try
             {
-                string tickerFolder = Path.Combine(settings.BasePath, settings.TickerPath);
+                string tickerFolder = Path.Combine(_settings.BasePath, _settings.TickerPath);
 
                 string[] files = Directory.GetFiles(tickerFolder, "Metastock_*.txt", SearchOption.AllDirectories);
 
@@ -235,7 +241,22 @@ namespace Screen.Ticks
             return fileList;
         }
 
-        public List<TickerEntity> getTickerListFromString(string content)
+
+        public IList<TickerEntity> GetTickerListByCode(string code)
+        {
+            List<TickerEntity> tickers = new List<TickerEntity>();
+
+
+            //var processedFolder = Path.Combine(settings.BasePath, settings.TickerProcessedPath);
+
+            //string filePath = Path.Combine(processedFolder, code + "_day.txt");
+
+
+            return tickers;
+        }
+
+
+        public IList<TickerEntity> getTickerListFromString(string content)
         {
             List<TickerEntity> tickers = new List<TickerEntity>();
 

@@ -29,11 +29,11 @@ SharedSettings settings = config.GetRequiredSection("Settings").Get<SharedSettin
 
 Log.Debug($"args: {ObjectHelper.ToJsonString(args)}");
 
-Parser.Default.ParseArguments<TickerOptions, ProcessOptions, CloneOptions>(args)
+Parser.Default.ParseArguments<TickerOptions, ProcessOptions, IndicatorOptions>(args)
     .MapResult(
       (TickerOptions opts) => RunTickerAndReturnExitCode(opts),
       (ProcessOptions opts) => RunProcessAndReturnExitCode(opts),
-      (CloneOptions opts) => RunCloneAndReturnExitCode(opts),
+      (IndicatorOptions opts) => RunIndicatorAndReturnExitCode(opts),
       errs => 1);
 
 // Prepare to get out
@@ -44,18 +44,18 @@ int RunTickerAndReturnExitCode(TickerOptions opts)
 {
     try
     {
-        SymbolManager symbolManager = new SymbolManager();
-        var result = symbolManager.LoadFullSymbolList(settings, null);
+        SymbolManager symbolManager = new SymbolManager(settings);
+        var result = symbolManager.LoadFullSymbolList(null);
 
-        TickerManager tickerManager = new TickerManager();
+        TickerManager tickerManager = new TickerManager(settings);
 
         if (opts.All)
         {
-            tickerManager.LoadTickerFromEmail(settings);
+            tickerManager.LoadTickerFromEmail();
         }
         else
         {
-            tickerManager.LoadTickerFromEmail(settings, opts.Days);
+            tickerManager.LoadTickerFromEmail(opts.Days);
         }
 
     } catch (Exception ex)
@@ -72,19 +72,19 @@ int RunProcessAndReturnExitCode(ProcessOptions opts)
 {
     try
     {
-        SymbolManager symbolManager = new SymbolManager();
+        SymbolManager symbolManager = new SymbolManager(settings);
 
-        var result = symbolManager.LoadFullSymbolList(settings, null);
+        var result = symbolManager.LoadFullSymbolList(null);
         Log.Debug($"Loaded symbol list {result.Count}.");
 
-        TickerManager tickerManager = new TickerManager();
+        TickerManager tickerManager = new TickerManager(settings);
 
         if (opts.All)
         {
-            tickerManager.ProcessTickersFromDownload(settings, result);
+            tickerManager.ProcessTickersFromDownload(result);
         } else
         {
-            tickerManager.ProcessTickersFromDownload(settings, result, opts.Days);
+            tickerManager.ProcessTickersFromDownload(result, opts.Days);
         }
     } catch (Exception ex)
     {
@@ -95,9 +95,11 @@ int RunProcessAndReturnExitCode(ProcessOptions opts)
     return 0;
 }
 
-int RunCloneAndReturnExitCode(CloneOptions opts)
+int RunIndicatorAndReturnExitCode(IndicatorOptions opts)
 {
-    Console.WriteLine("Clone");
+    TickerManager tickerManager = new TickerManager(settings);
+
+    Console.WriteLine("in indicator");
     return 0;
 }
 

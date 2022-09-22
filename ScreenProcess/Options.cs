@@ -21,8 +21,8 @@ namespace ScreenProcess
     [Verb("process", HelpText = "Process tickers.")]
     class ProcessOptions
     {
-        [Option('i', "indicator", Default = false, Required = false, HelpText = "If process indicators included.")]
-        public bool CalculateIndicators { get; set; }
+        //[Option('i', "indicator", Default = false, Required = false, HelpText = "If process indicators included.")]
+        //public bool CalculateIndicators { get; set; }
 
         [Option('a', "all", Default = false, Required = false, HelpText = "Process all tickers into individual file.")]
         public bool All { get; set; }
@@ -31,9 +31,13 @@ namespace ScreenProcess
         public int Days { get; set; }
     }
 
-    [Verb("clone", HelpText = "Clone a repository into a new directory.")]
-    class CloneOptions
+    [Verb("indicator", HelpText = "Process indicators.")]
+    class IndicatorOptions
     {
-        //clone options here
+        [Option('a', "all", Default = false, Required = false, HelpText = "Process all indicators for all files from day 1.")]
+        public bool All { get; set; }
+
+        [Option('d', "days", Default = 3, Required = false, HelpText = "Process number Days indicators into individual file.")]
+        public int Days { get; set; }
     }
 }

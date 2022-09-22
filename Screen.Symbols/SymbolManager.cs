@@ -10,13 +10,20 @@ namespace Screen.Symbols
 {
     public class SymbolManager
     {
-        public List<SymbolEntity> LoadFullSymbolList(SharedSettings settings, int? takeCount)
+        private SharedSettings _settings;
+
+        public SymbolManager(SharedSettings settings)
+        {
+            _settings = settings;
+        }
+
+        public List<SymbolEntity> LoadFullSymbolList(int? takeCount)
         {
             List<SymbolEntity> symbolList = new List<SymbolEntity>();
 
-            if (settings.BasePath != null && settings.SymbolFullFileName != null)
+            if (_settings.BasePath != null && _settings.SymbolFullFileName != null)
             {
-                using (var reader = new StreamReader(Path.Combine(settings.BasePath, settings.SymbolFullFileName)))
+                using (var reader = new StreamReader(Path.Combine(_settings.BasePath, _settings.SymbolFullFileName)))
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
                     csv.Context.RegisterClassMap<SymbolEntityMap>();
