@@ -12,7 +12,7 @@ namespace Screen.Utils
         {
             List<String> lineList = new List<string>();
             string[] lines = inputText.Split(
-                new[] { Environment.NewLine },
+                new[] { Environment.NewLine, "\n" },
                 StringSplitOptions.None
             );
 

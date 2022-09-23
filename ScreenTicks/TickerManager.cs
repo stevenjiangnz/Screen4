@@ -244,13 +244,22 @@ namespace Screen.Ticks
 
         public IList<TickerEntity> GetTickerListByCode(string code)
         {
-            List<TickerEntity> tickers = new List<TickerEntity>();
+            IList<TickerEntity> tickers = new List<TickerEntity>();
 
+            try
+            {
+                var processedFolder = Path.Combine(_settings.BasePath, _settings.TickerProcessedPath);
 
-            //var processedFolder = Path.Combine(settings.BasePath, settings.TickerProcessedPath);
+                string filePath = Path.Combine(processedFolder, code + "_day.txt");
 
-            //string filePath = Path.Combine(processedFolder, code + "_day.txt");
+                string tickerString = File.ReadAllText(filePath);
 
+                tickers = getTickerListFromString(tickerString);
+
+            } catch (Exception ex)
+            {
+                Log.Error(ex, $"Error in GetTickerListByCode {code}");
+            }
 
             return tickers;
         }

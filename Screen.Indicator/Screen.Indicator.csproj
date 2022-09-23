@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
+    <ProjectReference Include="..\Screen.Shared\Screen.Shared.csproj" />
     <ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
   </ItemGroup>
 

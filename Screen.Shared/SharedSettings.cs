@@ -14,5 +14,6 @@ namespace Screen.Shared
         public string? SymbolFullFileName { get; set; }
         public string? TickerEmailAccount { get; set; }
         public string? TickerEmailPWD { get; set; }
+        public string? IndicatorPath { get; set; }
     }
 }

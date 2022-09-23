@@ -3,7 +3,6 @@
 using Screen.Shared;
 using Screen.Ticks;
 using Microsoft.Extensions.Configuration;
-using Screen.Entity;
 using Screen.Utils;
 using Serilog;
 using CommandLine;

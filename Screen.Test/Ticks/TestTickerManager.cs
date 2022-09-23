@@ -55,7 +55,7 @@ namespace Screen.Test.Ticks
         {
             TickerManager manager = new TickerManager(_settings);
 
-            var result = manager.GetTickerListByCode("CCL");
+            var result = manager.GetTickerListByCode("CBA");
 
         }
     }
