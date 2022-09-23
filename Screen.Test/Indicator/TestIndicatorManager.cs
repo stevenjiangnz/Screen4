@@ -26,12 +26,13 @@ namespace Screen.Test.Indicator
         public void TestProcessIndicators()
         {
             TickerManager manager = new TickerManager(_settings);
+            string code = "CBA";
 
-            var result = manager.GetTickerListByCode("CBA");
+            var result = manager.GetTickerListByCode(code);
 
             IndicatorManager indManager = new IndicatorManager(_settings);
 
-            indManager.ProcessIndicatorsForCode(result);
+            indManager.ProcessIndicatorsForCode(code, result);
         }
     }
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -38,6 +38,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
+		<ProjectReference Include="..\Screen.Indicator\Screen.Indicator.csproj" />
 		<ProjectReference Include="..\Screen.Shared\Screen.Shared.csproj" />
 		<ProjectReference Include="..\Screen.Symbols\Screen.Symbols.csproj" />
 		<ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />

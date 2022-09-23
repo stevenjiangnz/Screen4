@@ -8,6 +8,8 @@ using Serilog;
 using CommandLine;
 using ScreenProcess;
 using Screen.Symbols;
+using Screen.Entity;
+using Screen.Indicator;
 
 // Build a config object, using env vars and JSON providers.
 IConfiguration config = new ConfigurationBuilder()
@@ -97,8 +99,25 @@ int RunProcessAndReturnExitCode(ProcessOptions opts)
 int RunIndicatorAndReturnExitCode(IndicatorOptions opts)
 {
     TickerManager tickerManager = new TickerManager(settings);
+    SymbolManager symbolManager = new SymbolManager(settings);
+    IndicatorManager indicatorManager = new IndicatorManager(settings);
+    
+    var symbolList = symbolManager.LoadFullSymbolList(null);
 
-    Console.WriteLine("in indicator");
+    foreach(SymbolEntity symbol in symbolList)
+    {
+        try
+        {
+            var symbolTickers = tickerManager.GetTickerListByCode(symbol.Code);
+            indicatorManager.ProcessIndicatorsForCode(symbol.Code, symbolTickers);
+            Log.Information($"Successfully processed for indicators {symbol.Code}.");
+        }
+        catch(Exception ex)
+        {
+            Log.Error(ex, $"Error in processing indicators for {symbol.Code}");
+        }
+    }
+
     return 0;
 }
 

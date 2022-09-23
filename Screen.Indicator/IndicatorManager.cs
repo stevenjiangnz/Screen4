@@ -18,12 +18,21 @@ namespace Screen.Indicator
             _settings = settings;
         }
 
-        public void ProcessIndicatorsForCode(IList<TickerEntity> tickerList)
+        public void ProcessIndicatorsForCode(string code, IList<TickerEntity> tickerList)
         {
-            if (tickerList == null || tickerList.Count == 0)
+            if (tickerList == null || tickerList.Count < 50)
             {
+                if (tickerList.Count != null)
+                {
+                    Log.Warning($"Ticker number {tickerList.Count} less than 50 for code {code}");
+                }
+                else
+                {
+                    Log.Error($"Ticker list returns null");
+                }
                 return;
             }
+
 
             int length = tickerList.Count;
             double[] close = tickerList.Select(p => (double)p.C).ToArray();
@@ -99,21 +108,19 @@ namespace Screen.Indicator
                 indList.Add(indicator);
             }
 
-            SaveIndicatorsToFile(indList);
+            SaveIndicatorsToFile(code, indList);
+
         }
 
-        public void SaveIndicatorsToFile(IList<IndicatorEntity> indList)
+        public void SaveIndicatorsToFile(string code, IList<IndicatorEntity> indList)
         {
             if (indList == null || indList.Count == 0)
             {
                 return;
             }
 
-            string code = string.Empty;
-
             try
             {
-                code = indList[0].Code;
 
                 var indicatorFolder = Path.Combine(_settings.BasePath, _settings.IndicatorPath);
 
