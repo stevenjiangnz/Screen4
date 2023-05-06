@@ -19,6 +19,11 @@ jobs:
             fetch-depth: 0
             submodules: recursive
 
+        - name: test
+          run: |
+            pwd
+            ll
+
         - name: Change directory to Terraform code
           working-directory: ./Screen.Deploy/terraform
           run: |
