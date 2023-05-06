@@ -21,3 +21,14 @@ resource "azurerm_storage_container" "screen_container" {
   storage_account_name  = azurerm_storage_account.screen_sa.name
   container_access_type = "private"
 }
+
+resource "azurerm_container_registry" "screen-cg" {
+  name                = "screencontainerregistry"
+  location            = var.localtion
+  resource_group_name = azurerm_resource_group.screen_rg.name
+  sku                 = "Standard"
+
+  admin_enabled = true
+
+  tags = var.tags
+}
