@@ -7,6 +7,18 @@ using CommandLine;
 
 namespace ScreenProcess
 {
+    [Verb("symbol", HelpText = "Display symbols list.")]
+    class SymbolOptions
+    {
+        [Option('a', "all", Default = false, Required = false, HelpText = "Display all symbols.")]
+        public bool All { get; set; }
+
+        [Option('t', "take", Default = 100, Required = false, HelpText = "Display the top symbols")]
+        public int Days { get; set; }
+
+    }
+
+
     [Verb("ticker", HelpText = "Load Ticker information from mailbox and process.")]
     class TickerOptions
     {

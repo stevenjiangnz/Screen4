@@ -32,14 +32,17 @@ Log.Debug($"args: {ObjectHelper.ToJsonString(args)}");
 
 Parser.Default.ParseArguments<TickerOptions, ProcessOptions, IndicatorOptions>(args)
     .MapResult(
+      (SymbolOptions opts) => RunSymbolAndReturnExitCode(opts),
       (TickerOptions opts) => RunTickerAndReturnExitCode(opts),
       (ProcessOptions opts) => RunProcessAndReturnExitCode(opts),
       (IndicatorOptions opts) => RunIndicatorAndReturnExitCode(opts),
       errs => 1);
 
-// Prepare to get out
-//Console.WriteLine("Press Enter to exit");
-//Console.ReadLine();
+int RunSymbolAndReturnExitCode(SymbolOptions opts)
+{
+    Log.Information("in RunSymbolAndReturnExitCode");
+    return 0;
+}
 
 int RunTickerAndReturnExitCode(TickerOptions opts)
 {
