@@ -3,17 +3,21 @@ on: [push]
 
 env:
   TERRAFORM_PATH: "./Screen.Deploy/terraform"
+  ARM_SUBSCRIPTION_ID: ${{ secrets.TF_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.TF_TENANT_ID }}
+  ARM_CLIENT_ID: ${{ secrets.TF_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.TF_CLIENT_SECRET }}
 
 jobs:
     Run-Terraform:
       runs-on: ubuntu-latest
 
       steps:
-        - uses: azure/login@v1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-        - run: |
-            az account list
+        # - uses: azure/login@v1
+        #   with:
+        #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+        # - run: |
+        #     az account list
 
                             
         - name: Checkout Source Code
