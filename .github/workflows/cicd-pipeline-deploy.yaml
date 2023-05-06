@@ -22,14 +22,14 @@ jobs:
         - name: test
           run: |
             pwd
-            ll
+            ls -la
 
         - name: Change directory to Terraform code
           working-directory: ./Screen.Deploy/terraform
           run: |
             cd ./Screen.Deploy/terraform
             pwd
-            ll
+            ls -la
 
             # install terraform
         - uses: hashicorp/setup-terraform@v2
