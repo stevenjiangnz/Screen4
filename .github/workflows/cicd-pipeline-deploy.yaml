@@ -1,0 +1,17 @@
+name: Apply Terraform 
+
+on: [push]
+
+jobs:
+    Run-Terraform:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Source Code
+          uses: actions/checkout@v2
+          with:
+            fetch-depth: 0
+            submodules: recursive
+
+            # install terraform
+        - uses: hashicorp/setup-terraform@v2
+          name: setup terraform
