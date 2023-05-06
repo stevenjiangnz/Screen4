@@ -19,6 +19,18 @@ jobs:
             fetch-depth: 0
             submodules: recursive
 
+        - name: Change directory to Terraform code
+          working-directory: ./Screen.Deploy/terraform
+          run: |
+            cd ./Screen.Deploy/terraform
+            pwd
+            ll
+
             # install terraform
         - uses: hashicorp/setup-terraform@v2
           name: setup terraform
+        
+
+        - name: Terraform Validate
+          run: terraform validate
+        
