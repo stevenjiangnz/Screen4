@@ -21,9 +21,9 @@ jobs:
 
 
         - name: Change directory to Terraform code
-          working-directory: ./Screen.Deploy/terraform
           run: |
             pwd
+            cd ./Screen.Deploy/terraform
             ls -la
 
         # install terraform
@@ -36,7 +36,6 @@ jobs:
             terraform init
 
         - name: Terraform Validate
-          working-directory: ./Screen.Deploy/terraform
           run: | 
             pwd
             terraform validate
