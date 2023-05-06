@@ -2,10 +2,7 @@ resource "azurerm_resource_group" "screen_rg" {
   name     = "WG-Screen4"
   location = "australiaeast"
 
-  tags = {
-    environment = "dev"
-    owner       = "Steven Jiang"
-  }
+  tags = var.tags
 }
 
 
@@ -16,7 +13,5 @@ resource "azurerm_storage_account" "screen_sa" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
-  tags = {
-    environment = "dev"
-    owner       = "john.doe"
-  }
+  tags = var.tags
+}
