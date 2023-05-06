@@ -1,10 +1,14 @@
 name: Apply Terraform 
-
 on: [push]
+
+defaults:
+  run:
+    working-directory: ./Screen.Deploy/terraform
 
 jobs:
     Run-Terraform:
       runs-on: ubuntu-latest
+
       steps:
         - uses: azure/login@v1
           with:
@@ -23,7 +27,6 @@ jobs:
         - name: Change directory to Terraform code
           run: |
             pwd
-            cd ./Screen.Deploy/terraform
             ls -la
 
         # install terraform
