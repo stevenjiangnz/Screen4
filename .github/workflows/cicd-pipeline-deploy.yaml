@@ -13,13 +13,6 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
-        # - uses: azure/login@v1
-        #   with:
-        #     creds: ${{ secrets.AZURE_CREDENTIALS }}
-        # - run: |
-        #     az account list
-
-                            
         - name: Checkout Source Code
           uses: actions/checkout@v2
           with:
@@ -39,24 +32,16 @@ jobs:
 
         - name: Initialize Terraform
           working-directory: ${{ env.TERRAFORM_PATH }}
-          run: |
-            pwd
-            terraform init
+          run: terraform init
 
         - name: Terraform Validate
           working-directory: ${{ env.TERRAFORM_PATH }}
-          run: | 
-            pwd
-            terraform validate
+          run: terraform validate
 
         - name: Plan Terraform
           working-directory: ${{ env.TERRAFORM_PATH }}
-          run: |
-            pwd
-            terraform plan
+          run: terraform plan
 
         - name: Apply Terraform
           working-directory: ${{ env.TERRAFORM_PATH }}
-          run: |
-            pwd
-            terraform apply -auto-approve        
+          run: terraform apply -auto-approve        
