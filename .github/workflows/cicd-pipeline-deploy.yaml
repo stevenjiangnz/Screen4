@@ -3,7 +3,7 @@ on: [push]
 
 defaults:
   run:
-    working-directory: ./Screen.Deploy/terraform
+    working-directory: Screen.Deploy/terraform
 
 jobs:
     Run-Terraform:
