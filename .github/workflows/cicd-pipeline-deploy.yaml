@@ -29,26 +29,30 @@ jobs:
             pwd
             ls -la
 
-        # # install terraform
-        # - uses: hashicorp/setup-terraform@v2
-        #   name: setup terraform
+        # install terraform
+        - uses: hashicorp/setup-terraform@v2
+          name: setup terraform
 
-        # - name: Initialize Terraform
-        #   run: |
-        #     pwd
-        #     terraform init
+        - name: Initialize Terraform
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: |
+            pwd
+            terraform init
 
-        # - name: Terraform Validate
-        #   run: | 
-        #     pwd
-        #     terraform validate
+        - name: Terraform Validate
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: | 
+            pwd
+            terraform validate
 
-        # - name: Plan Terraform
-        #   run: |
-        #     pwd
-        #     terraform plan
+        - name: Plan Terraform
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: |
+            pwd
+            terraform plan
 
-        # - name: Apply Terraform
-        #   run: |
-        #     pwd
-        #     terraform apply -auto-approve        
+        - name: Apply Terraform
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: |
+            pwd
+            terraform apply -auto-approve        
