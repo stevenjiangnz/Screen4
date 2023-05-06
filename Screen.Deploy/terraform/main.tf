@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "screen_rg" {
   name     = "WG-Screen4"
-  location = "australiaeast"
+  location = var.localtion
 
   tags = var.tags
 }
@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "screen_rg" {
 resource "azurerm_storage_account" "screen_sa" {
   name                     = "sascreen4sj"
   resource_group_name      = azurerm_resource_group.screen_rg.name
-  location                 = "australiaeast"
+  location                 = var.localtion
   account_tier             = "Standard"
   account_replication_type = "LRS"
 

@@ -5,3 +5,8 @@ variable "tags" {
     owner       = "steven.jiang"
   }
 }
+
+variable "localtion" {
+  type = string
+  default = "australiaeast"
+}
