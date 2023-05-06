@@ -31,13 +31,22 @@ jobs:
           name: setup terraform
 
         - name: Initialize Terraform
-          run: terraform init
+          run: |
+            pwd
+            terraform init
 
         - name: Terraform Validate
-          run: terraform validate
-        
+          working-directory: ./Screen.Deploy/terraform
+          run: | 
+            pwd
+            terraform validate
+
         - name: Plan Terraform
-          run: terraform plan
+          run: |
+            pwd
+            terraform plan
 
         - name: Apply Terraform
-          run: terraform apply -auto-approve        
+          run: |
+            pwd
+            terraform apply -auto-approve        
