@@ -25,15 +25,19 @@ jobs:
           run: |
             pwd
             ls -la
-            cd ./Screen.Deploy/terraform
-            pwd
-            ls -la
 
-            # install terraform
+        # install terraform
         - uses: hashicorp/setup-terraform@v2
           name: setup terraform
-        
+
+        - name: Initialize Terraform
+          run: terraform init
 
         - name: Terraform Validate
           run: terraform validate
         
+        - name: Plan Terraform
+          run: terraform plan
+
+        - name: Apply Terraform
+          run: terraform apply -auto-approve        
