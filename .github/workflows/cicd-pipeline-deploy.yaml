@@ -1,10 +1,6 @@
 name: Apply Terraform 
 on: [push]
 
-# defaults:
-#   run:
-#     working-directory: Screen.Deploy/terraform
-
 jobs:
     Run-Terraform:
       runs-on: ubuntu-latest
@@ -14,22 +10,20 @@ jobs:
           with:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
         - run: |
-            pwd
-            ls -la
             az account list
 
                             
-        # - name: Checkout Source Code
-        #   uses: actions/checkout@v2
-        #   with:
-        #     fetch-depth: 0
-        #     submodules: recursive
+        - name: Checkout Source Code
+          uses: actions/checkout@v2
+          with:
+            fetch-depth: 0
+            submodules: recursive
 
 
-        # - name: Change directory to Terraform code
-        #   run: |
-        #     pwd
-        #     ls -la
+        - name: Change directory to Terraform code
+          run: |
+            pwd
+            ls -la
 
         # # install terraform
         # - uses: hashicorp/setup-terraform@v2
