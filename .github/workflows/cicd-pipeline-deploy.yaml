@@ -19,14 +19,12 @@ jobs:
             fetch-depth: 0
             submodules: recursive
 
-        - name: test
-          run: |
-            pwd
-            ls -la
 
         - name: Change directory to Terraform code
           working-directory: ./Screen.Deploy/terraform
           run: |
+            pwd
+            ls -la
             cd ./Screen.Deploy/terraform
             pwd
             ls -la
