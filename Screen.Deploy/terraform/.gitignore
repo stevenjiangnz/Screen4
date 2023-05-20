@@ -1,0 +1,37 @@
+# Terraform .terraform directory
+.terraform/
+
+# Compiled Terraform files
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
+# Crash log files
+crash.log
+
+# Exclude sensitive variable definitions
+*.auto.tfvars
+*.auto.tfvars.json
+*.tfvars
+*.tfvars.json
+
+# Local backup files
+*.bak
+*.backup
+*.swp
+*~
+
+# Ignore override files as they are usually used to override resources in a different .tf file
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore example files
+*_example.tf
+*_example.tf.json
+*_example.json
+
+# Ignore files used to improve terraform documentation
+.terraformrc
+terraform.rc
