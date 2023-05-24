@@ -22,13 +22,13 @@ resource "azurerm_storage_container" "screen_container" {
   container_access_type = "private"
 }
 
-resource "azurerm_container_registry" "screen-cg" {
-  name                = "screencontainerregistry"
-  location            = var.localtion
-  resource_group_name = azurerm_resource_group.screen_rg.name
-  sku                 = "Standard"
+# resource "azurerm_container_registry" "screen-cg" {
+#   name                = "screencontainerregistry"
+#   location            = var.localtion
+#   resource_group_name = azurerm_resource_group.screen_rg.name
+#   sku                 = "Standard"
 
-  admin_enabled = true
+#   admin_enabled = true
 
-  tags = var.tags
-}
+#   tags = var.tags
+# }

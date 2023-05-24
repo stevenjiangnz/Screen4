@@ -3,6 +3,7 @@ variable "tags" {
   default = {
     environment = "dev"
     owner       = "steven.jiang"
+    purpose     = "Screen"
   }
 }
 
