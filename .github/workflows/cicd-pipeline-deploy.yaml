@@ -1,10 +1,17 @@
 name: Apply Terraform 
-
 on: [push]
+
+env:
+  TERRAFORM_PATH: "./Screen.Deploy/terraform"
+  ARM_SUBSCRIPTION_ID: ${{ secrets.TF_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.TF_TENANT_ID }}
+  ARM_CLIENT_ID: ${{ secrets.TF_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.TF_CLIENT_SECRET }}
 
 jobs:
     Run-Terraform:
       runs-on: ubuntu-latest
+
       steps:
         - name: Checkout Source Code
           uses: actions/checkout@v2
@@ -12,6 +19,29 @@ jobs:
             fetch-depth: 0
             submodules: recursive
 
-            # install terraform
+
+        - name: Change directory to Terraform code
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: |
+            pwd
+            ls -la
+
+        # install terraform
         - uses: hashicorp/setup-terraform@v2
           name: setup terraform
+
+        - name: Initialize Terraform
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: terraform init
+
+        - name: Terraform Validate
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: terraform validate
+
+        - name: Plan Terraform
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: terraform plan
+
+        - name: Apply Terraform
+          working-directory: ${{ env.TERRAFORM_PATH }}
+          run: terraform apply -auto-approve        

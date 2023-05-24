@@ -1,7 +1,16 @@
 {
+<<<<<<< HEAD
   "azureFunctions.deploySubpath": "myfunctest/bin/Release/net6.0/publish",
   "azureFunctions.projectLanguage": "C#",
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
   "azureFunctions.preDeployTask": "publish (functions)"
 }
+=======
+    "azureFunctions.deploySubpath": "Screen.ProcessFunction/bin/Release/net6.0/publish",
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.preDeployTask": "publish (functions)"
+}
+>>>>>>> b8cb912679599ad153d3e48f8c2846a88db0a4ab
