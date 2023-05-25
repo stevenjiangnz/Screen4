@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{9179E9
 		resources\deploy\Dockerfile = resources\deploy\Dockerfile
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Screen.ProcessFunction", "Screen.ProcessFunction\Screen.ProcessFunction.csproj", "{D8C78456-C913-409F-9EF6-014489FB3B92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,6 +152,18 @@ Global
 		{608C5B74-57E1-433F-B202-29182E71709B}.Release|x64.Build.0 = Release|Any CPU
 		{608C5B74-57E1-433F-B202-29182E71709B}.Release|x86.ActiveCfg = Release|Any CPU
 		{608C5B74-57E1-433F-B202-29182E71709B}.Release|x86.Build.0 = Release|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x64.Build.0 = Release|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
