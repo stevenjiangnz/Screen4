@@ -24,7 +24,12 @@ namespace Screen.Utils
 
             var epoch = dt - new DateTime(1970, 1, 1, 0, 0, 0);
 
-            return (long)epoch.TotalSeconds * 1000;
+            return (long)epoch.TotalSeconds;
+        }
+
+        public static long ToTimeStamp(DateTime dt)
+        {
+            return ToTimeStamp(ToInt(dt));
         }
 
         public static int ToInt(DateTime dt)

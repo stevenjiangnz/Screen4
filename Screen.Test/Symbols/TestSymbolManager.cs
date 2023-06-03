@@ -13,6 +13,11 @@ namespace Screen.Test.Symbols
 
         };
 
+        public TestSymbolManager()
+        {
+            new TestConfigHelper().LoadConfig();
+        }
+
         [Fact]
         public void TestLoadFullSymbolList_Full()
         {

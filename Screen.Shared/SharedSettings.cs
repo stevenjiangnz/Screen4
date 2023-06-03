@@ -15,5 +15,9 @@ namespace Screen.Shared
         public string? TickerEmailAccount { get; set; }
         public string? TickerEmailPWD { get; set; }
         public string? IndicatorPath { get; set; }
+
+
+        public string? YahooUrlTemplate { get; set; }
+        public string? YahooFilePath { get; set; }
     }
 }
