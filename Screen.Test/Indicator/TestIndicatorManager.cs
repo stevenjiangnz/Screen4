@@ -19,7 +19,9 @@ namespace Screen.Test.Indicator
             TickerPath = "tickers",
             SymbolFullFileName = "Fulllist.csv",
             TickerProcessedPath = "tickers_processed",
-            IndicatorPath = "indicators"
+            IndicatorPath = "indicators",
+            YahooUrlTemplate = "https://query1.finance.yahoo.com/v7/finance/download/{0}?period1={1}&period2={2}&interval=1d&events=history&includeAdjustedClose=true",
+            YahooFilePath = @"c:\data\yahootickers"
         };
 
         [Fact]
@@ -33,6 +35,22 @@ namespace Screen.Test.Indicator
             IndicatorManager indManager = new IndicatorManager(_settings);
 
             indManager.ProcessIndicatorsForCode(code, result);
+        }
+
+        [Fact]
+        public async void TestProcessTaooIndicators()
+        {
+            string symbol = "SUN.AX";
+            var manager = new YahooTickManager(this._settings);
+            DateTime start = DateTime.Today.AddMonths(-200);
+            DateTime end = DateTime.Today;
+            var tickString = await manager.DownloadYahooTicks("SUN.AX", start, end);
+
+            var tickerEntityList = manager.ConvertToEntities(symbol, tickString);
+            IndicatorManager indManager = new IndicatorManager(_settings);
+
+            indManager.ProcessIndicatorsForCode(symbol, tickerEntityList);
+
         }
     }
 }

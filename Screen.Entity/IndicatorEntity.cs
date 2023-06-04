@@ -48,10 +48,10 @@ namespace Screen.Entity
                             this.WilliamR = float.Parse(indParts[12]);
                         if (!string.IsNullOrEmpty(indParts[13]))
                             this.RSI = float.Parse(indParts[13]);
-                        //if (!string.IsNullOrEmpty(indParts[14]))
-                        //    this.Stoch_K = float.Parse(indParts[14]);
-                        //if (!string.IsNullOrEmpty(indParts[15]))
-                        //    this.Stoch_D = float.Parse(indParts[15]);
+                        if (!string.IsNullOrEmpty(indParts[14]))
+                            this.Stoch_K = float.Parse(indParts[14]);
+                        if (!string.IsNullOrEmpty(indParts[15]))
+                            this.Stoch_D = float.Parse(indParts[15]);
 
                     }
                 }
@@ -72,8 +72,8 @@ namespace Screen.Entity
         public double? ADX { get; set; }
         public double? WilliamR { get; set; }
         public double? RSI { get; set; }
-        //public double? Stoch_K { get; set; }
-        //public double? Stoch_D { get; set; }
+        public double? Stoch_K { get; set; }
+        public double? Stoch_D { get; set; }
 
 
         public override string ToString()

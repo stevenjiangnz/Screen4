@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Serilog;
 using Screen.Shared;
+using Screen.Utils;
 
 namespace Screen.Indicator
 {
@@ -20,6 +21,13 @@ namespace Screen.Indicator
 
         public void ProcessIndicatorsForCode(string code, IList<TickerEntity> tickerList)
         {
+            IList<IndicatorEntity> indList = this.CalculateIndicators(code, tickerList);
+
+            SaveIndicatorsToFile(code, indList);
+        }
+
+        public IList<IndicatorEntity> CalculateIndicators(string code, IList<TickerEntity> tickerList)
+        {
             if (tickerList == null || tickerList.Count < 50)
             {
                 if (tickerList.Count != null)
@@ -30,7 +38,7 @@ namespace Screen.Indicator
                 {
                     Log.Error($"Ticker list returns null");
                 }
-                return;
+                return null;
             }
 
 
@@ -75,9 +83,9 @@ namespace Screen.Indicator
             RSI.Calculate(close, 14, outRSI);
 
             //// Stochastic
-            //double?[] outStoch_K = new double?[length];
-            //double?[] outStoch_D = new double?[length];
-            //Stochastic.CalculateSlow(close, high, low, 14, 3, outStoch_K, outStoch_D);
+            double?[] outStoch_K = new double?[length];
+            double?[] outStoch_D = new double?[length];
+            Stochastic.CalculateSlow(close, high, low, 14, 3, outStoch_K, outStoch_D);
 
             IList<IndicatorEntity> indList = new List<IndicatorEntity>();
 
@@ -101,16 +109,16 @@ namespace Screen.Indicator
                     ADX = outADX[i],
                     WilliamR = outWilliamR[i],
                     RSI = outRSI[i],
-                    //Stoch_K = outStoch_K[i],
-                    //Stoch_D = outStoch_D[i],
+                    Stoch_K = outStoch_K[i],
+                    Stoch_D = outStoch_D[i],
                 };
 
                 indList.Add(indicator);
             }
 
-            SaveIndicatorsToFile(code, indList);
-
+            return indList;
         }
+
 
         public void SaveIndicatorsToFile(string code, IList<IndicatorEntity> indList)
         {
@@ -137,6 +145,9 @@ namespace Screen.Indicator
 
                 File.WriteAllText(filePath, sb.ToString());
 
+                string jsonPath = Path.Combine(indicatorFolder, code + "_indicator.json");
+
+                File.WriteAllText(jsonPath, ObjectHelper.ToJsonString(indList));
             }
             catch (Exception ex)
             {

@@ -26,10 +26,10 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestDownloadTicks()
         {
-            var manager = new YahooTcikManager(this._settings);
+            var manager = new YahooTickManager(this._settings);
             DateTime start = DateTime.Today.AddMonths(-12);
             DateTime end = DateTime.Today;
-            manager.DownloadTicks("SUN.AX", start, end).Wait();
+            manager.DownloadYahooTicks("SUN.AX", start, end).Wait();
         }
 
         [Fact]
@@ -52,5 +52,20 @@ namespace Screen.Test.Ticks
             }
 
         }
+
+        [Fact]
+        public async Task TestConvertToEntities()
+        {
+            string symbol = "SUN.AX";
+            var manager = new YahooTickManager(this._settings);
+            DateTime start = DateTime.Today.AddMonths(-12);
+            DateTime end = DateTime.Today;
+            var tickString = await manager.DownloadYahooTicks("SUN.AX", start, end);
+
+            var tickerEntityList = manager.ConvertToEntities(symbol, tickString);
+
+            Assert.NotNull(tickerEntityList);
+        }
+
     }
 }

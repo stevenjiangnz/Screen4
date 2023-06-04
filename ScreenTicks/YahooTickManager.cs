@@ -3,21 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Screen.Entity;
 using Screen.Shared;
 using Screen.Utils;
 
 namespace Screen.Ticks
 {
-    public class YahooTcikManager
+    public class YahooTickManager
     {
         private SharedSettings _settings;
 
-        public YahooTcikManager(SharedSettings settings)
+        public YahooTickManager(SharedSettings settings)
         {
             this._settings = settings;
         }
 
-        public async Task<string> DownloadTicks(string symbol, DateTime start, DateTime end)
+        public async Task<string> DownloadYahooTicks(string symbol, DateTime start, DateTime end)
         {
             //string url = "https://query1.finance.yahoo.com/v7/finance/download/AFI.AX?period1=1653690768&period2=1685226768&interval=1d&events=history&includeAdjustedClose=true"; // Replace with the actual URL of the CSV file
 
@@ -64,7 +65,25 @@ namespace Screen.Ticks
             string urlResult = string.Format(template, symbol, start, end, symbol);
             
             return urlResult;
+        }
 
+        public List<TickerEntity> ConvertToEntities(string symbol, string tickerString)
+        {
+            List<TickerEntity> tickerEntities = new List<TickerEntity>();
+
+            string[] lines = tickerString.Split(new[] { '\n' }, StringSplitOptions.None);
+
+            foreach (string line in lines)
+            {
+                if (!line.Contains("Date,"))
+                {
+                    // Process each line here
+                    var entity = new TickerEntity(symbol, line);
+                    tickerEntities.Add(entity);
+                }
+            }
+
+            return tickerEntities;
         }
     }
 }
