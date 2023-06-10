@@ -18,11 +18,19 @@ namespace Screen.Ticks
             this._settings = settings;
         }
 
-        public async Task<string> DownloadYahooTicks(string symbol, DateTime start, DateTime end)
+        /// <summary>
+        /// down load tick
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="interval">possible value '1d' or '1wk'</param>
+        /// <returns></returns>
+        public async Task<string> DownloadYahooTicks(string symbol, DateTime start, DateTime end, string interval="1d")
         {
             //string url = "https://query1.finance.yahoo.com/v7/finance/download/AFI.AX?period1=1653690768&period2=1685226768&interval=1d&events=history&includeAdjustedClose=true"; // Replace with the actual URL of the CSV file
 
-            string url = this.getYahooTickUrl(_settings.YahooUrlTemplate, symbol, DateHelper.ToTimeStamp(start), DateHelper.ToTimeStamp(end));
+            string url = this.getYahooTickUrl(_settings.YahooUrlTemplate, symbol, DateHelper.ToTimeStamp(start), DateHelper.ToTimeStamp(end), interval);
             string tickerContent = string.Empty;
             using (HttpClient client = new HttpClient())
             {
@@ -34,14 +42,7 @@ namespace Screen.Ticks
                     using (HttpContent content = response.Content)
                     {
                         tickerContent = await content.ReadAsStringAsync();
-
-                        //// Perform operations with the CSV data
-                        //// For example, you can save it to a file
-                        //string filePath = "path/to/save/file.csv"; // Replace with the desired file path
-                        //await System.IO.File.WriteAllTextAsync(filePath, csv);
-
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -62,7 +63,7 @@ namespace Screen.Ticks
 
         public string getYahooTickUrl(string template, string symbol, long start, long end, string interval = "1d")
         {
-            string urlResult = string.Format(template, symbol, start, end, symbol);
+            string urlResult = string.Format(template, symbol, start, end, interval);
             
             return urlResult;
         }
@@ -77,9 +78,16 @@ namespace Screen.Ticks
             {
                 if (!line.Contains("Date,"))
                 {
-                    // Process each line here
-                    var entity = new TickerEntity(symbol, line);
-                    tickerEntities.Add(entity);
+                    try
+                    {
+                        // Process each line here
+                        var entity = new TickerEntity(symbol, line);
+                        tickerEntities.Add(entity);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error in parse: {symbol}\n" + line + "\n" + ex.ToString());
+                    }
                 }
             }
 

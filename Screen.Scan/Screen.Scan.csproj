@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
+    <ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
+  </ItemGroup>
+
 </Project>

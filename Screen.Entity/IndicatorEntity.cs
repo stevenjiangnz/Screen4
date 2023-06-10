@@ -90,9 +90,9 @@ namespace Screen.Entity
                 (this.DIMinus.HasValue ? this.DIMinus.Value.ToString() : "") + "," +
                 (this.ADX.HasValue ? this.ADX.Value.ToString() : "") + "," +
                 (this.WilliamR.HasValue ? this.WilliamR.Value.ToString() : "") + "," +
-                (this.RSI.HasValue ? this.RSI.Value.ToString() : "");
-                //(this.Stoch_K.HasValue ? this.Stoch_K.Value.ToString() : "") + "," +
-                //(this.Stoch_D.HasValue ? this.Stoch_D.Value.ToString() : "") ;
+                (this.RSI.HasValue ? this.RSI.Value.ToString() : "") + "," +
+                (this.Stoch_K.HasValue ? this.Stoch_K.Value.ToString() : "") + "," +
+                (this.Stoch_D.HasValue ? this.Stoch_D.Value.ToString() : "") ;
         }
     }
 }

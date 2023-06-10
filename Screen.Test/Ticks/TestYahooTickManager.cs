@@ -19,17 +19,27 @@ namespace Screen.Test.Ticks
             TickerPath = "tickers",
             SymbolFullFileName = "Fulllist.csv",
             TickerProcessedPath = "tickers_processed",
-            YahooUrlTemplate = "https://query1.finance.yahoo.com/v7/finance/download/{0}?period1={1}&period2={2}&interval=1d&events=history&includeAdjustedClose=true",
+            YahooUrlTemplate = "https://query1.finance.yahoo.com/v7/finance/download/{0}?period1={1}&period2={2}&interval={3}&events=history&includeAdjustedClose=true",
             YahooFilePath = @"c:\data\yahootickers"
         };
 
         [Fact]
-        public void TestDownloadTicks()
+        public void TestDownloadTicks_Daily()
         {
             var manager = new YahooTickManager(this._settings);
             DateTime start = DateTime.Today.AddMonths(-12);
             DateTime end = DateTime.Today;
             manager.DownloadYahooTicks("SUN.AX", start, end).Wait();
+        }
+
+
+        [Fact]
+        public void TestDownloadTicks_Weekly()
+        {
+            var manager = new YahooTickManager(this._settings);
+            DateTime start = DateTime.Today.AddMonths(-60);
+            DateTime end = DateTime.Today;
+            manager.DownloadYahooTicks("SUN.AX", start, end, "1wk").Wait();
         }
 
         [Fact]
