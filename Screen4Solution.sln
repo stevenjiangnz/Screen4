@@ -39,6 +39,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Screen.Notification", "Screen.Notification\Screen.Notification.csproj", "{BE4A66D1-A370-4359-951A-876E95819298}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Screen.Access", "Screen.Access\Screen.Access.csproj", "{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{122CB960-E911-4AAE-9E1C-C16DD949DB39}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\cicd-pipeline-deploy.yaml.old = .github\workflows\cicd-pipeline-deploy.yaml.old
+		.github\workflows\cicd-pipeline.yaml = .github\workflows\cicd-pipeline.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -169,12 +179,37 @@ Global
 		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x64.Build.0 = Release|Any CPU
 		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x86.ActiveCfg = Release|Any CPU
 		{D8C78456-C913-409F-9EF6-014489FB3B92}.Release|x86.Build.0 = Release|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Debug|x64.Build.0 = Debug|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Debug|x86.Build.0 = Debug|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Release|x64.ActiveCfg = Release|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Release|x64.Build.0 = Release|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Release|x86.ActiveCfg = Release|Any CPU
+		{BE4A66D1-A370-4359-951A-876E95819298}.Release|x86.Build.0 = Release|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Debug|x64.Build.0 = Debug|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Debug|x86.Build.0 = Debug|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x64.ActiveCfg = Release|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x64.Build.0 = Release|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x86.ActiveCfg = Release|Any CPU
+		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9179E9AF-EEC4-4D64-B143-CFFF7851723F} = {7551364A-0497-496B-8BA1-168B37005858}
+		{122CB960-E911-4AAE-9E1C-C16DD949DB39} = {7551364A-0497-496B-8BA1-168B37005858}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B7BE22C8-652C-4AE3-B067-DAD0AA4FB43C}
