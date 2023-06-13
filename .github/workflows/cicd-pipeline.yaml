@@ -6,6 +6,8 @@ env:
   ARTIFACT_NAME: drop
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+  IMAGE_NAME: screen.processfunction
+  REGISTRY: stevenjiangnz
 
 jobs:
   Build:
@@ -23,3 +25,12 @@ jobs:
       - name: Login to Docker Hub
         run: docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
   
+
+      - name: ACR - Build and push Docker image
+        working-directory: ${{ env.working-directory }}
+        run: |
+          cd ../resources/deploy
+          bash build.sh ${{ env.IMAGE_NAME}}
+
+          docker image tag ${{ env.IMAGE_NAME}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:latest
+          docker image push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:latest
