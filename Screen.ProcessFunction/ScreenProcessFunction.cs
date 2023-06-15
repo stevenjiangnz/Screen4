@@ -19,8 +19,10 @@ namespace Screen.Function
             ILogger log)
         {
             log.LogInformation("Status check called.");
+            var testValue = Environment.GetEnvironmentVariable("MySetting");
+
             return Task.FromResult<IActionResult>(
-                new OkObjectResult("Status ok. " + DateTime.Now));
+                new OkObjectResult($"Status ok. {testValue}" + DateTime.Now));
         }
 
         [FunctionName("symbol")]
