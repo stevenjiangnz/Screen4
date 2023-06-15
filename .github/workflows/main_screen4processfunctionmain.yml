@@ -3,14 +3,15 @@
 
 name: Build and deploy dotnet core app to Azure Function App - screen4processfunctionmain
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
+on: [push]
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './Screen.ProcessFunction' # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x' # set this to the dotnet version to use
 
 jobs:
@@ -40,3 +41,70 @@ jobs:
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E57A4D4EB322432EA6F5D0E98350ACAE }}
+
+  # Publish new image to ACR
+  Publish:
+    name: Publish new image to ACR
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: [ '6.0']
+      
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0 
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: 'Resolve Project Dependencies Using Dotnet'
+        shell: pwsh
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release --output ./output
+          popd
+
+      # Get the existing and next sematic version
+      - name: Get Version
+        id: version
+        shell: bash
+        run: |
+          export VERSION=$(docker run -v $(pwd):/repo codacy/git-version /bin/git-version \
+            --folder /repo \
+            --release-branch main)
+
+          echo "::set-output name=new-version::$VERSION"
+          echo "New Version: $VERSION"
+      
+      # Create a release and tag in github
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          tag_name: ${{ steps.version.outputs.new-version }}
+          release_name: Release ${{ steps.version.outputs.new-version }}
+          body: |
+            Changes in this Release
+            - First Change Place Holder
+            - Second Change Placeholder
+          draft: false
+          prerelease: false
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: 'screen4processfunctionmain'
+          slot-name: 'Production'
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E57A4D4EB322432EA6F5D0E98350ACAE }}
+  
