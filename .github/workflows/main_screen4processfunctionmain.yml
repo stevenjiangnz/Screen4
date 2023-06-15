@@ -3,8 +3,6 @@
 name: Build and deploy dotnet core app to Azure Function App - screen4processfunctionmain
 on: 
   push:
-    branches-ignore:
-      - main
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './Screen.ProcessFunction' # set this to the path to your web app project, defaults to the repository root
@@ -13,6 +11,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v2
