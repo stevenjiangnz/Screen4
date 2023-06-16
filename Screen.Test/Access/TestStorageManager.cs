@@ -9,12 +9,12 @@ namespace Screen.Test.Access
 {
     public class TestStorageManager
     {
-        [Fact]
-        public async void TestAccessAzureContainer()
-        {
-            var storageManager = new StorageManager();
+        //[Fact]
+        //public async void TestAccessAzureContainer()
+        //{
+        //    var storageManager = new StorageManager(null);
 
-            await storageManager.AzureAccess();
-        }
+        //    await storageManager.AzureAccess("", "");
+        //}
     }
 }

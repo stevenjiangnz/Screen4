@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
+using Screen.Access;
 
 namespace Screen.Function
 {
@@ -19,20 +20,27 @@ namespace Screen.Function
             ILogger log)
         {
             log.LogInformation("Status check called.");
-            var testValue = Environment.GetEnvironmentVariable("MySetting");
+            var testValue = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
 
             return Task.FromResult<IActionResult>(
                 new OkObjectResult($"Status ok. {testValue}" + DateTime.Now));
         }
 
         [FunctionName("symbol")]
-        public static Task<IActionResult> Symbol(
+        public static async Task<IActionResult> Symbol(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
             HttpRequest req,
             ILogger log)
         {
             try
             {
+                StorageManager storageManager = new StorageManager(log);
+
+                var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
+                var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
+
+                var result = await storageManager.AzureAccess(storageConnString, storageContainer);
+
                 // top -1 means return all, otherwise take the number defined in top
                 int top = -1;
                 string topString = string.Empty;
@@ -59,22 +67,18 @@ namespace Screen.Function
                     }
                 }
 
-                string storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
-                string storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
-
-                log.LogInformation("Status check called." + storageConnString + storageContainer);
-                return Task.FromResult<IActionResult>(
-                    new OkObjectResult("Status ok. " + DateTime.Now));
+                return new OkObjectResult(result);
             }
+
             catch (ArgumentException ex)
             {
                 log.LogError(ex, "Error arguments in Symbol");
-                return Task.FromResult<IActionResult>(new BadRequestObjectResult(ex.Message));
+                return new BadRequestObjectResult(ex.Message);
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Error in SearchBatteryState");
-                return Task.FromResult<IActionResult>(new InternalServerErrorResult());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
     }

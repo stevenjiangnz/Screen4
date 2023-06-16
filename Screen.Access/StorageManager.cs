@@ -1,28 +1,30 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-
+using Microsoft.Extensions.Logging;
 namespace Screen.Access
 {
     public class StorageManager
     {
-        public async Task AzureAccess()
+        private ILogger _log;
+
+        public StorageManager(ILogger log)
         {
-            // Connection string of your Azure Storage account
-            string connectionString = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+            this._log = log;
+        }
 
-            // Name of the container where the files are stored
-            string containerName = "screen";
-
+        public async Task<string> AzureAccess(string connStr, string container)
+        {
+            string symbolContent = string.Empty;
             // Initialize the BlobServiceClient
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connStr);
 
             // Get a reference to the container
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(container);
 
             // List all blobs in the container
             await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
             {
-                Console.WriteLine($"File Name: {blobItem.Name}");
+                this._log.LogInformation($"File Name: {blobItem.Name}");
 
                 // Get a reference to the blob
                 BlobClient blobClient = containerClient.GetBlobClient(blobItem.Name);
@@ -33,12 +35,14 @@ namespace Screen.Access
                 // Read the content of the blob
                 using (StreamReader reader = new StreamReader(downloadInfo.Content))
                 {
-                    string content = await reader.ReadToEndAsync();
-                    Console.WriteLine($"File Content: {content}");
+                    symbolContent = await reader.ReadToEndAsync();
+                    this._log.LogInformation($"File Content: {symbolContent}");
                 }
 
-                Console.WriteLine();
+
             }
+
+            return symbolContent;
         }
     }
 }
