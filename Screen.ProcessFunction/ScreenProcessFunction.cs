@@ -37,18 +37,16 @@ namespace Screen.Function
         {
             try
             {
-                //StorageManager storageManager = new StorageManager(log);
-
                 var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
                 var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
                 var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
                 
 
-                //var result = await storageManager.AzureAccess(storageConnString, storageContainer, symbolListFileName);
-
                 // top -1 means return all, otherwise take the number defined in top
                 int top = -1;
                 string topString = string.Empty;
+
+                string output = "json";
 
                 var queryDict = req.GetQueryParameterDictionary();
 
@@ -65,6 +63,12 @@ namespace Screen.Function
                                 top = int.Parse(topString);
                             }
                         }
+
+                        if (queryDict.ContainsKey("output"))
+                        {
+                            output = queryDict["output"];
+                        }
+
                     }
                     catch (Exception ex)
                     {
@@ -84,8 +88,14 @@ namespace Screen.Function
                     resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName);
                 }
 
+                if (output == "json")
+                {
+                    return new JsonResult(resultList);
+                } else
+                {
+                    return new OkObjectResult(symbolManager.GetStringFromSymbolList(resultList));
+                }
 
-                return new OkObjectResult(resultList);
             }
 
             catch (ArgumentException ex)
