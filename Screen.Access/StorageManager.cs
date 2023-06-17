@@ -33,7 +33,7 @@ namespace Screen.Access
             using (StreamReader reader = new StreamReader(downloadInfo.Content))
             {
                 symbolContent = await reader.ReadToEndAsync();
-                this._log.LogInformation($"File Content: {symbolContent}");
+                this._log.LogInformation($"Returned file content size: {symbolContent.Length}");
             }
 
             return symbolContent;

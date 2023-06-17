@@ -83,6 +83,22 @@ namespace Screen.Symbols
             return symbolList;
         }
 
+        public string GetStringFromSymbolList(List<SymbolEntity> symbols)
+        {
+            string output = string.Empty;
+
+            foreach (var symbol in symbols)
+            {
+                output = output + symbol.Code + ",";
+            }
+
+            if (output.EndsWith(','))
+            {
+                output = output.TrimEnd(',');
+            }
+
+            return output;
+        }
 
         public class SymbolEntityMap : ClassMap<SymbolEntity>
         {
