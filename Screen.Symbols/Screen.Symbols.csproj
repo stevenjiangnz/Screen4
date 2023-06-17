@@ -13,6 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Screen.Access\Screen.Access.csproj" />
 		<ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
 		<ProjectReference Include="..\Screen.Shared\Screen.Shared.csproj" />
 	</ItemGroup>
