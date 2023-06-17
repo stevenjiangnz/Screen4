@@ -38,8 +38,10 @@ namespace Screen.Function
 
                 var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
                 var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
+                var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
+                
 
-                var result = await storageManager.AzureAccess(storageConnString, storageContainer);
+                var result = await storageManager.AzureAccess(storageConnString, storageContainer, symbolListFileName);
 
                 // top -1 means return all, otherwise take the number defined in top
                 int top = -1;

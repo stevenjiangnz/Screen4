@@ -3,6 +3,7 @@
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Microsoft.Extensions.Logging;
 using Screen.Entity;
 using Screen.Shared;
 
@@ -11,11 +12,25 @@ namespace Screen.Symbols
     public class SymbolManager
     {
         private SharedSettings _settings;
+        private ILogger _log;
 
         public SymbolManager(SharedSettings settings)
         {
             _settings = settings;
         }
+
+        public SymbolManager(ILogger log)
+        {
+            this._log = log;
+        }
+
+
+        public List<SymbolEntity> GetSymbolsFromAzureStorage(int? takeCount = null)
+        {
+            List<SymbolEntity> symbolList = new List<SymbolEntity>();
+            return symbolList;
+        }
+
 
         public List<SymbolEntity> LoadFullSymbolList(int? takeCount)
         {
