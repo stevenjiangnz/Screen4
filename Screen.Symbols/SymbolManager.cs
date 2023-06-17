@@ -4,6 +4,7 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.Extensions.Logging;
+using Screen.Access;
 using Screen.Entity;
 using Screen.Shared;
 
@@ -25,9 +26,33 @@ namespace Screen.Symbols
         }
 
 
-        public List<SymbolEntity> GetSymbolsFromAzureStorage(int? takeCount = null)
+        public async Task<List<SymbolEntity>> GetSymbolsFromAzureStorage(string connStr, 
+            string container, 
+            string symbolListFileName,
+            int? takeCount = null)
         {
             List<SymbolEntity> symbolList = new List<SymbolEntity>();
+            StorageManager storageManager = new StorageManager(this._log);
+
+            string symbolResultString = await storageManager.GetSymbolFromAzureStorage(connStr, container, symbolListFileName);
+            using (var reader = new StringReader(symbolResultString))
+            {
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Context.RegisterClassMap<SymbolEntityMap>();
+                    var records = csv.GetRecords<SymbolEntity>();
+
+                    if (takeCount.HasValue)
+                    {
+                        symbolList = records.OrderByDescending(s => s.MarketCap).Take(takeCount.Value).ToList();
+                    }
+                    else
+                    {
+                        symbolList = records.OrderByDescending(s => s.MarketCap).ToList();
+                    }
+                }
+            }
+
             return symbolList;
         }
 

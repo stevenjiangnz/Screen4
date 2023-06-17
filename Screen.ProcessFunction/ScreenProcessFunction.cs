@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +9,8 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Screen.Access;
+using Screen.Entity;
+using Screen.Symbols;
 
 namespace Screen.Function
 {
@@ -34,14 +37,14 @@ namespace Screen.Function
         {
             try
             {
-                StorageManager storageManager = new StorageManager(log);
+                //StorageManager storageManager = new StorageManager(log);
 
                 var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
                 var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
                 var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
                 
 
-                var result = await storageManager.AzureAccess(storageConnString, storageContainer, symbolListFileName);
+                //var result = await storageManager.AzureAccess(storageConnString, storageContainer, symbolListFileName);
 
                 // top -1 means return all, otherwise take the number defined in top
                 int top = -1;
@@ -69,7 +72,20 @@ namespace Screen.Function
                     }
                 }
 
-                return new OkObjectResult(result);
+                SymbolManager symbolManager = new SymbolManager(log);
+
+                List<SymbolEntity> resultList = new List<SymbolEntity>();
+
+                if (top > 0)
+                {
+                    resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName, top);
+                } else
+                {
+                    resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName);
+                }
+
+
+                return new OkObjectResult(resultList);
             }
 
             catch (ArgumentException ex)

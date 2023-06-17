@@ -12,7 +12,7 @@ namespace Screen.Access
             this._log = log;
         }
 
-        public async Task<string> AzureAccess(string connStr, string container, string symbolListFileName)
+        public async Task<string> GetSymbolFromAzureStorage(string connStr, string container, string symbolListFileName)
         {
             string symbolContent = string.Empty;
             // Initialize the BlobServiceClient
@@ -35,26 +35,6 @@ namespace Screen.Access
                 symbolContent = await reader.ReadToEndAsync();
                 this._log.LogInformation($"File Content: {symbolContent}");
             }
-
-
-            //// List all blobs in the container
-            //await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
-            //{
-            //    this._log.LogInformation($"File Name: {blobItem.Name}");
-
-            //    // Get a reference to the blob
-            //    BlobClient blobClient = containerClient.GetBlobClient(blobItem.Name);
-
-            //    // Download the blob's content
-            //    BlobDownloadInfo downloadInfo = await blobClient.DownloadAsync();
-
-            //    // Read the content of the blob
-            //    using (StreamReader reader = new StreamReader(downloadInfo.Content))
-            //    {
-            //        symbolContent = await reader.ReadToEndAsync();
-            //        this._log.LogInformation($"File Content: {symbolContent}");
-            //    }
-            //}
 
             return symbolContent;
         }
