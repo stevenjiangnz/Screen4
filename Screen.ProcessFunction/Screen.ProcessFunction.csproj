@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Screen.Access\Screen.Access.csproj" />
     <ProjectReference Include="..\Screen.Symbols\Screen.Symbols.csproj" />
+    <ProjectReference Include="..\ScreenTicks\Screen.Ticks.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

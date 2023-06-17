@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Screen.Access;
 using Screen.Entity;
 using Screen.Symbols;
+using Screen.Ticks;
 
 namespace Screen.Function
 {
@@ -100,7 +101,6 @@ namespace Screen.Function
                 }
 
             }
-
             catch (ArgumentException ex)
             {
                 log.LogError(ex, "Error arguments in Symbol");
@@ -108,31 +108,142 @@ namespace Screen.Function
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Error in SearchBatteryState");
+                log.LogError(ex, "Error in Symbol");
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
 
+
+
         [FunctionName("ticker")]
         public static async Task<IActionResult> Ticker(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req,
+            ILogger log)
+        {
+            string symbol = string.Empty;
+            string interval = "d"; // d for daily or w for weekly
+            int period = 360; // default for 360
+            try
+            {
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                string output = "json";
+
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("output"))
+                    {
+                        output = queryDict["output"];
+                    }
+
+                    if (queryDict.ContainsKey("symbol"))
+                    {
+                        symbol = queryDict["symbol"];
+                    } else
+                    {
+                        throw new ArgumentException("symbol is required");
+                    }
+
+                    if (queryDict.ContainsKey("interval"))
+                    {
+                        interval = queryDict["interval"].ToString().ToLower();
+
+                        if (interval != "d" && interval != "w")
+                        {
+                            throw new ArgumentException("interval can be either 'd' or 'w'");
+                        }
+                    }
+
+                    string periodString = string.Empty;
+                    try
+                    {
+                        if (queryDict.ContainsKey("period"))
+                        {
+                            periodString = queryDict["period"];
+
+                            if (!string.IsNullOrEmpty(periodString))
+                            {
+                                period = int.Parse(periodString);
+                            }
+                        }
+
+                    } catch (Exception ex)
+                    {
+                        throw new ArgumentException($"period much be an integer");
+                    }
+
+                    YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
+                    {
+                        YahooUrlTemplate = yahooUrlTemplate
+                    });
+
+
+                    symbol = symbol.IndexOf(".AX") > 0 ? symbol.ToUpper() : symbol.ToUpper().Trim() + ".AX";
+                    DateTime end = DateTime.Now.Date;
+                    DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1* period) : DateTime.Now.Date.AddDays(-7 * period);
+                    string intervalString = interval == "d" ? "1d" : "1wk";
+
+                    string returnTickString = await tickManager.DownloadYahooTicks(symbol, start, end, intervalString);
+
+                    if (output == "json")
+                    {
+                        var tickList = tickManager.ConvertToEntities(symbol, returnTickString);
+                        return new JsonResult(tickList);
+                    }
+
+                    return new OkObjectResult(returnTickString);
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError(ex, "Error arguments in Ticker");
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Ticker");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+
+            return new OkObjectResult($"This is a GET request symbol: {symbol}, interval: {interval}, period: {period}");
+        }
+
+
+        [FunctionName("scan")]
+        public static async Task<IActionResult> Scan(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            // Read the request body
-            string requestBody;
-            using (StreamReader streamReader = new StreamReader(req.Body))
+            if (req.Method == "POST")
             {
-                requestBody = streamReader.ReadToEnd();
+                // Read the request body
+                string requestBody;
+                using (StreamReader streamReader = new StreamReader(req.Body))
+                {
+                    requestBody = streamReader.ReadToEnd();
+                }
+
+                // Process the posted data
+                // Example: assuming the posted data is a JSON object
+                // You can deserialize it to a class or perform any other necessary operations
+                // For demonstration purposes, we'll simply return the posted data as the response
+                return new OkObjectResult(requestBody);
+            }
+            else if (req.Method == "GET")
+            {
+                // Process GET request
+                // Example: Return a simple response for GET requests
+                return new OkObjectResult("This is a GET request");
             }
 
-            // Process the posted data
-            // Example: assuming the posted data is a JSON object
-            // You can deserialize it to a class or perform any other necessary operations
-            // For demonstration purposes, we'll simply return the posted data as the response
-            return new OkObjectResult(requestBody);
+            return new BadRequestResult();
         }
     }
 }
