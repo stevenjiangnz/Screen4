@@ -11,8 +11,10 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Screen.Access;
 using Screen.Entity;
+using Screen.Indicator;
 using Screen.Symbols;
 using Screen.Ticks;
+using Screen.Utils;
 
 namespace Screen.Function
 {
@@ -114,7 +116,6 @@ namespace Screen.Function
         }
 
 
-
         [FunctionName("ticker")]
         public static async Task<IActionResult> Ticker(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
@@ -208,10 +209,54 @@ namespace Screen.Function
                 log.LogError(ex, "Error in Ticker");
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
-
-            return new OkObjectResult($"This is a GET request symbol: {symbol}, interval: {interval}, period: {period}");
+            return new BadRequestObjectResult("Error in get Ticker");
         }
 
+
+        [FunctionName("indicator")]
+        public static async Task<IActionResult> Indicator(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
+            HttpRequest req,
+            ILogger log)
+        {
+            try
+            {
+                IndicatorManager indicatorManager = new IndicatorManager(null);
+
+                if (req.Method == "POST")
+                {
+                    // Read the request body
+                    string requestBody = string.Empty;
+                    using (StreamReader streamReader = new StreamReader(req.Body))
+                    {
+                        requestBody = streamReader.ReadToEnd();
+                    }
+
+                    if (!string.IsNullOrEmpty(requestBody))
+                    {
+                        List<TickerEntity> tickets = ObjectHelper.FromJsonString<List<TickerEntity>>(requestBody);
+                        
+
+                        if (tickets != null && tickets.Count > 0)
+                        {
+                            IList<IndicatorEntity> indicators = indicatorManager.CalculateIndicators(tickets[0].T, tickets);
+                            return new OkObjectResult(indicators);
+                        }
+                    }
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError(ex, "Error arguments in Indictor");
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Indictor");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+            return new BadRequestObjectResult("Error in get Indictors. Should not see this...");
+        }
 
         [FunctionName("scan")]
         public static async Task<IActionResult> Scan(
