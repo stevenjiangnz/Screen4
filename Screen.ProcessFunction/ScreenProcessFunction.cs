@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Screen.Entity;
 using Screen.Indicator;
+using Screen.ProcessFunction;
 using Screen.Scan;
 using Screen.Symbols;
 using Screen.Ticks;
@@ -180,8 +181,6 @@ namespace Screen.Function
                         YahooUrlTemplate = yahooUrlTemplate
                     });
 
-
-                    symbol = symbol.IndexOf(".AX") > 0 ? symbol.ToUpper() : symbol.ToUpper().Trim() + ".AX";
                     DateTime end = DateTime.Now.Date;
                     DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1* period) : DateTime.Now.Date.AddDays(-7 * period);
                     string intervalString = interval == "d" ? "1d" : "1wk";
@@ -297,5 +296,86 @@ namespace Screen.Function
             }
             return new BadRequestResult();
         }
+
+
+        [FunctionName("process")]
+        public static async Task<IActionResult> Process(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req,
+            ILogger log)
+        {
+            try
+            {
+                var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
+                var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
+                var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
+
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+
+                string interval = "d"; // d for daily or w for weekly
+
+                // top -1 means return all, otherwise take the number defined in top
+                int top = 300;
+                string topString = string.Empty;
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    try
+                    {
+                        if (queryDict.ContainsKey("top"))
+                        {
+                            topString = queryDict["top"];
+
+                            if (!string.IsNullOrEmpty(topString))
+                            {
+                                top = int.Parse(topString);
+                            }
+                        }
+
+                        if (queryDict.ContainsKey("interval"))
+                        {
+                            interval = queryDict["interval"].ToString().ToLower();
+
+                            if (interval != "d" && interval != "w")
+                            {
+                                throw new ArgumentException("interval can be either 'd' or 'w'");
+                            }
+                        }
+
+                        ScreenProcessManager processManager = new ScreenProcessManager(log);
+
+                        if (interval == "w")
+                        {
+                            await processManager.ProcessWeeklyBull(storageConnString, storageContainer, symbolListFileName, top, yahooUrlTemplate);
+                            return new OkObjectResult("Weekly Process finished.");
+                        }
+                        else if(interval == "d")
+                        {
+                            return new OkObjectResult("Daily Process finished.");
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgumentException($"Error parse input parameter {topString}", ex);
+                    }
+                }
+
+                return new OkObjectResult("Process error, unknown inputs.");
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError(ex, "Error arguments in Symbol");
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Symbol");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
     }
 }
