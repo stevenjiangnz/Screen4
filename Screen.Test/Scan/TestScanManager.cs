@@ -37,7 +37,7 @@ namespace Screen.Test.Scan
 
             IList<IndicatorEntity> IndList = ObjectHelper.FromJsonString<IList<IndicatorEntity>>(indicatorJsonString);
 
-            ScanManager manager = new ScanManager();
+            ScanManager manager = new ScanManager(null);
 
             var result = manager.ProcessScan(IndList).Where(m=>m.ADX_INTO_BULL == true).ToList();
 

@@ -2,16 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using Screen.Access;
 using Screen.Entity;
 using Screen.Indicator;
+using Screen.Scan;
 using Screen.Symbols;
 using Screen.Ticks;
 using Screen.Utils;
@@ -221,6 +219,8 @@ namespace Screen.Function
         {
             try
             {
+                log.LogInformation("In indicator function method.");
+
                 IndicatorManager indicatorManager = new IndicatorManager(null);
 
                 if (req.Method == "POST")
@@ -260,34 +260,41 @@ namespace Screen.Function
 
         [FunctionName("scan")]
         public static async Task<IActionResult> Scan(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("In scan function method.");
 
-            if (req.Method == "POST")
+            try
             {
-                // Read the request body
-                string requestBody;
-                using (StreamReader streamReader = new StreamReader(req.Body))
+                ScanManager scanManager = new ScanManager(null);
+
+                if (req.Method == "POST")
                 {
-                    requestBody = streamReader.ReadToEnd();
+                    // Read the request body
+                    string requestBody;
+                    using (StreamReader streamReader = new StreamReader(req.Body))
+                    {
+                        requestBody = streamReader.ReadToEnd();
+
+                        if (!string.IsNullOrEmpty(requestBody))
+                        {
+                            List<IndicatorEntity> indicators = ObjectHelper.FromJsonString<List<IndicatorEntity>>(requestBody);
+
+                            var scanResult = scanManager.ProcessScan(indicators);
+
+                            return new OkObjectResult(scanResult);
+                        }
+                    }
+
+                    return new BadRequestObjectResult("Input of scan is not valid.");
                 }
-
-                // Process the posted data
-                // Example: assuming the posted data is a JSON object
-                // You can deserialize it to a class or perform any other necessary operations
-                // For demonstration purposes, we'll simply return the posted data as the response
-                return new OkObjectResult(requestBody);
-            }
-            else if (req.Method == "GET")
+            } catch (Exception ex)
             {
-                // Process GET request
-                // Example: Return a simple response for GET requests
-                return new OkObjectResult("This is a GET request");
+                log.LogError(ex, "Error in scan.");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
-
             return new BadRequestResult();
         }
     }
