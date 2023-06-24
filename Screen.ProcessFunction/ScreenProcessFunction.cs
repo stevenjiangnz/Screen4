@@ -50,12 +50,7 @@ namespace Screen.Function
                 string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 string asxFileName = Environment.GetEnvironmentVariable("ASX_COMPANY_LIST_FILE_NAME");
 
-                log.LogInformation($"serviceAccountKeyJson {serviceAccountKeyJson}");
-                log.LogInformation($"parentFolderId {parentFolderId}");
-                log.LogInformation($"asxFileName {asxFileName}");
-
                 GoogleCredential credential;
-
 
                 var symbolManager = new SymbolManager(log);
 
