@@ -123,7 +123,7 @@ namespace Screen.Function
             }
             catch (ArgumentException ex)
             {
-                log.LogError(ex, "Error arguments in Symbol");
+                log.LogError(ex, "Error arguments in Symbol" + ex.ToString());
                 return new BadRequestObjectResult(ex.Message);
             }
             catch (Exception ex)

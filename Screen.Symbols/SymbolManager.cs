@@ -64,6 +64,8 @@ namespace Screen.Symbols
             string symbolListFileName,
             int? takeCount = null)
         {
+            this._log.LogInformation($"in GetSymbolsFromGoogleStorage, rootid {rootId}, symbolfileName {symbolListFileName}");
+
             List<SymbolEntity> symbolList = new List<SymbolEntity>();
             string symbolResultString = string.Empty;
 
