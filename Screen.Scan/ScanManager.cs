@@ -1,11 +1,17 @@
-﻿using Screen.Entity;
+﻿using Microsoft.Extensions.Logging;
+using Screen.Entity;
 
 namespace Screen.Scan
 {
     public class ScanManager
     {
-        public IList<ScanResultEntity> ProcessScan(IList<IndicatorEntity> indicators, int? dateToProcess = null,
-            bool recursive = false)
+        private readonly ILogger _logger;
+        public ScanManager(ILogger log)
+        {
+            this._logger = log;
+        }
+
+        public IList<ScanResultEntity> ProcessScan(IList<IndicatorEntity> indicators, int? dateToProcess = null)
         {
             IList<ScanResultEntity> resultList = new List<ScanResultEntity>();
 
@@ -23,14 +29,20 @@ namespace Screen.Scan
             for (int i = 0; i < periodArray.Length; i++)
             {
                 var isReverseBull = this.Check_MACD_REVERSE_BULL(i, macdArray, macdSignalArray, macdHistArray);
-               
+                var isCrossBull = this.Check_MACD_CROSS_BULL(i, macdArray, macdSignalArray, macdHistArray);
                 var isAdxBull = this.Check_ADX_INTO_BULL(i, adxArray, diPlusArray, diMinusArray);
+                var isAdxCrossBull = this.Check_ADX_CROSS_BULL(i, adxArray, diPlusArray, diMinusArray);
+                var isAdxTrendBull = this.Check_ADX_TREND_BULL(i, adxArray, diPlusArray, diMinusArray);
+
                 var scanResult = new ScanResultEntity()
                 {
                     Symbol = orderedIndicators[0].Code,
                     TradingDate = periodArray[i],
                     MACD_REVERSE_BULL = isReverseBull,
-                    ADX_INTO_BULL = isAdxBull
+                    MACD_CROSS_BULL = isCrossBull,
+                    ADX_INTO_BULL = isAdxBull,
+                    ADX_CROSS_BULL = isAdxCrossBull,
+                    ADX_TREND_BULL = isAdxTrendBull
                 };
 
                 resultList.Add(scanResult);
@@ -76,24 +88,19 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error in process Check_MACD_REVERSE_BULL" + ex.ToString());
+                this._logger.LogError("Error in process Check_MACD_REVERSE_BULL" + ex.ToString());
             }
             return result;
         }
 
-        public bool? Check_ADX_INTO_BULL(int index, double?[] adxArray, double?[] diPlusArray,
-            double?[] diMinusArray)
+        public bool? Check_MACD_CROSS_BULL(int index, double?[] macdArray, double?[] macdSignalArray,
+    double?[] macdHistArray)
         {
             bool? result = null;
 
             try
             {
-                if (diPlusArray[index] > diMinusArray[index] &&
-                    diMinusArray[index] > adxArray[index] &&
-                    (diMinusArray[index]-adxArray[index]) < 8 &&
-                    adxArray[index] > adxArray[index+1] &&
-                    Math.Abs(diMinusArray[index].Value - adxArray[index].Value)<
-                    Math.Abs(diMinusArray[index +1].Value - adxArray[index+1].Value) )
+                if (macdArray[index] > macdSignalArray[index] && macdArray[index + 1] < macdSignalArray[index + 1])
                 {
                     result = true;
                 }
@@ -106,10 +113,89 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._logger.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
             }
             return result;
+        }
 
+        public bool? Check_ADX_INTO_BULL(int index, double?[] adxArray, double?[] diPlusArray,
+    double?[] diMinusArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (diPlusArray[index] > diMinusArray[index] &&
+                    diMinusArray[index] > adxArray[index] &&
+                    (diMinusArray[index] - adxArray[index]) < 8 &&
+                    adxArray[index] > adxArray[index + 1] &&
+                    Math.Abs(diMinusArray[index].Value - adxArray[index].Value) <
+                    Math.Abs(diMinusArray[index + 1].Value - adxArray[index + 1].Value))
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
+        public bool? Check_ADX_CROSS_BULL(int index, double?[] adxArray, double?[] diPlusArray,
+    double?[] diMinusArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (diPlusArray[index] > diMinusArray[index] &&
+                    diPlusArray[index + 1] < diMinusArray[index +1])
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
+        public bool? Check_ADX_TREND_BULL(int index, double?[] adxArray, double?[] diPlusArray,
+    double?[] diMinusArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (diPlusArray[index] > diMinusArray[index] &&
+                    adxArray[index] > diMinusArray[index])
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+            }
+            return result;
         }
 
     }

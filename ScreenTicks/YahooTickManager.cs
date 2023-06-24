@@ -25,6 +25,8 @@ namespace Screen.Ticks
         {
             //string url = "https://query1.finance.yahoo.com/v7/finance/download/AFI.AX?period1=1653690768&period2=1685226768&interval=1d&events=history&includeAdjustedClose=true"; // Replace with the actual URL of the CSV file
 
+            symbol = symbol.IndexOf(".AX") > 0 ? symbol.ToUpper() : symbol.ToUpper().Trim() + ".AX";
+
             string url = this.getYahooTickUrl(_settings.YahooUrlTemplate, symbol, DateHelper.ToTimeStamp(start), DateHelper.ToTimeStamp(end), interval);
             string tickerContent = string.Empty;
             using (HttpClient client = new HttpClient())
