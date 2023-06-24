@@ -45,9 +45,14 @@ namespace Screen.Function
         {
             try
             {
+                log.LogInformation($"GoogleSymbol: {req}");
                 string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
                 string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 string asxFileName = Environment.GetEnvironmentVariable("ASX_COMPANY_LIST_FILE_NAME");
+
+                log.LogInformation($"serviceAccountKeyJson {serviceAccountKeyJson}");
+                log.LogInformation($"parentFolderId {parentFolderId}");
+                log.LogInformation($"asxFileName {asxFileName}");
 
                 GoogleCredential credential;
 
@@ -128,7 +133,7 @@ namespace Screen.Function
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Error in Symbol");
+                log.LogError(ex, "Error in Symbol" + ex.ToString());
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
