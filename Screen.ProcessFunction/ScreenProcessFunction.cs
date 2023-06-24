@@ -15,6 +15,11 @@ using Screen.Symbols;
 using Screen.Ticks;
 using Screen.Utils;
 
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using System.Text;
+
 namespace Screen.Function
 {
     public class ScreenProcessFunction
@@ -33,7 +38,154 @@ namespace Screen.Function
         }
 
         [FunctionName("symbol")]
-        public static async Task<IActionResult> Symbol(
+        public static async Task<IActionResult> GoogleSymbol(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                    HttpRequest req,
+            ILogger log)
+        {
+            try
+            {
+                string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
+                string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                string asxFileName = Environment.GetEnvironmentVariable("ASX_COMPANY_LIST_FILE_NAME");
+
+                GoogleCredential credential;
+
+
+                var symbolManager = new SymbolManager(log);
+
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(serviceAccountKeyJson)))
+                {
+                    credential = GoogleCredential.FromStream(stream).CreateScoped(DriveService.Scope.Drive);
+                }
+
+                var service = new DriveService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credential
+                });
+
+
+                // top -1 means return all, otherwise take the number defined in top
+                int top = -1;
+                string topString = string.Empty;
+
+                string output = "json";
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    try
+                    {
+                        if (queryDict.ContainsKey("top"))
+                        {
+                            topString = queryDict["top"];
+
+                            if (!string.IsNullOrEmpty(topString))
+                            {
+                                top = int.Parse(topString);
+                            }
+                        }
+
+                        if (queryDict.ContainsKey("output"))
+                        {
+                            output = queryDict["output"];
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgumentException($"Error parse input parameter {topString}", ex);
+                    }
+                }
+
+
+                List<SymbolEntity> resultList = new List<SymbolEntity>();
+
+                if (top > 0)
+                {
+                    resultList = await symbolManager.GetSymbolsFromGoogleStorage(service, parentFolderId, asxFileName, top);
+                }
+                else
+                {
+                    resultList = await symbolManager.GetSymbolsFromGoogleStorage(service, parentFolderId, asxFileName);
+                }
+
+                if (output == "json")
+                {
+                    return new JsonResult(resultList);
+                }
+                else
+                {
+                    return new OkObjectResult(symbolManager.GetStringFromSymbolList(resultList));
+                }
+
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError(ex, "Error arguments in Symbol");
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Symbol");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+        public static void CreateJsonFile(DriveService service, string filename, string jsonContent, string parentFolderId)
+        {
+            var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+            {
+                Name = filename,
+                MimeType = "application/json",
+                Parents = new List<string> { parentFolderId }
+            };
+
+            byte[] byteArray = Encoding.UTF8.GetBytes(jsonContent);
+            using (MemoryStream stream = new MemoryStream(byteArray))
+            {
+                FilesResource.CreateMediaUpload request = service.Files.Create(fileMetadata, stream, "application/json");
+                request.Fields = "id";
+                request.Upload();
+            }
+
+            Console.WriteLine("File created with ID: " + fileMetadata.Id);
+        }
+
+
+        public static void ListFilesInFolder(DriveService service, string folderId, string indent = "")
+        {
+            // Define parameters of request.
+            FilesResource.ListRequest listRequest = service.Files.List();
+            listRequest.Q = $"'{folderId}' in parents";
+            listRequest.Fields = "nextPageToken, files(id, name, mimeType)";
+
+            // List all files and folders.
+            IList<Google.Apis.Drive.v3.Data.File> files = listRequest.Execute().Files;
+            Console.WriteLine(indent + "Files and folders:");
+            if (files != null && files.Count > 0)
+            {
+                foreach (var file in files)
+                {
+                    Console.WriteLine(indent + "{0} ({1})", file.Name, file.Id);
+
+                    // If the file is a folder, recurse into it.
+                    if (file.MimeType == "application/vnd.google-apps.folder")
+                    {
+                        ListFilesInFolder(service, file.Id, indent + "  ");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine(indent + "No files or folders found.");
+            }
+        }
+
+        [FunctionName("azuresymbol")]
+        public static async Task<IActionResult> AzureSymbol(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
             HttpRequest req,
             ILogger log)
@@ -143,7 +295,8 @@ namespace Screen.Function
                     if (queryDict.ContainsKey("symbol"))
                     {
                         symbol = queryDict["symbol"];
-                    } else
+                    }
+                    else
                     {
                         throw new ArgumentException("symbol is required");
                     }
@@ -171,7 +324,8 @@ namespace Screen.Function
                             }
                         }
 
-                    } catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         throw new ArgumentException($"period much be an integer");
                     }
@@ -182,7 +336,7 @@ namespace Screen.Function
                     });
 
                     DateTime end = DateTime.Now.Date;
-                    DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1* period) : DateTime.Now.Date.AddDays(-7 * period);
+                    DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
                     string intervalString = interval == "d" ? "1d" : "1wk";
 
                     string returnTickString = await tickManager.DownloadYahooTicks(symbol, start, end, intervalString);
@@ -234,7 +388,7 @@ namespace Screen.Function
                     if (!string.IsNullOrEmpty(requestBody))
                     {
                         List<TickerEntity> tickets = ObjectHelper.FromJsonString<List<TickerEntity>>(requestBody);
-                        
+
 
                         if (tickets != null && tickets.Count > 0)
                         {
@@ -289,7 +443,8 @@ namespace Screen.Function
 
                     return new BadRequestObjectResult("Input of scan is not valid.");
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 log.LogError(ex, "Error in scan.");
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
@@ -351,7 +506,7 @@ namespace Screen.Function
                             await processManager.ProcessWeeklyBull(storageConnString, storageContainer, symbolListFileName, top, yahooUrlTemplate);
                             return new OkObjectResult("Weekly Process finished.");
                         }
-                        else if(interval == "d")
+                        else if (interval == "d")
                         {
                             return new OkObjectResult("Daily Process finished.");
                         }

@@ -12,4 +12,3 @@ Screen4
 # use the following link to download stock list
 
 https://www2.asx.com.au/markets/trade-our-cash-market/directory
-
