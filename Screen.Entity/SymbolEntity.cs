@@ -9,13 +9,13 @@ namespace Screen.Entity
 
         }
 
-        public SymbolEntity(string code, string company, string sector, long marketCap, double weight)
+        public SymbolEntity(string code, string company, string sector, DateTime listDate, long marketCap)
         {
             Code = code;
             Company = company;
             Sector = sector;
+            ListDate = listDate;
             MarketCap = marketCap;
-            Weight = weight;
         }
 
         [Index(0)]
@@ -28,10 +28,9 @@ namespace Screen.Entity
         public string Sector { get; set; }
 
         [Index(3)]
-        public long MarketCap { get; set; }
+        public DateTime ListDate { get; set; }
 
         [Index(4)]
-
-        public double Weight { get; set; }
+        public long MarketCap { get; set; }
     }
 }

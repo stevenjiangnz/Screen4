@@ -14,6 +14,11 @@ namespace Screen.Indicator
     {
         private SharedSettings _settings;
 
+        public IndicatorManager()
+        {
+
+        }
+
         public IndicatorManager(SharedSettings settings)
         {
             _settings = settings;

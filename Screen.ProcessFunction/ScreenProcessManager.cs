@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Google.Apis.Drive.v3;
+using Microsoft.Extensions.Logging;
 using Screen.Entity;
+using Screen.Indicator;
 using Screen.Symbols;
 using Screen.Ticks;
 using System;
@@ -13,12 +15,50 @@ namespace Screen.ProcessFunction
     public class ScreenProcessManager
     {
         private ILogger _log;
-        public ScreenProcessManager(ILogger log) { 
+        private YahooTickManager _tickerManager;
+        private IndicatorManager _indicatorManager;
+        public ScreenProcessManager(ILogger log, string yahooTemplate)
+        {
             this._log = log;
+
+            this._tickerManager = new YahooTickManager(new Shared.SharedSettings
+            {
+                YahooUrlTemplate = yahooTemplate,
+            });
+
+            this._indicatorManager = new IndicatorManager();
         }
 
-        public async Task<List<ScanResultEntity>> ProcessWeeklyBull(string storageConnStr, 
-            string storageContainer, string symbolListFileName, int top, string yahooUrlTemplate)
+        #region Google based
+        public async Task<List<ScanResultEntity>> ProcessWeeklyBull(DriveService service,
+            string rootId,
+            string symbolListFileName, 
+            int top, 
+            string yahooUrlTemplate)
+        {
+            this._log.LogInformation("in ProcessWeeklyBull");
+
+            List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
+
+            SymbolManager symbolManager = new SymbolManager(this._log);
+
+            var symbolList = await symbolManager.GetSymbolsFromGoogleStorage(service, rootId, symbolListFileName, top);
+
+            this._log.LogInformation($"After get Symbol, returned {symbolList.Count}");
+
+            foreach ( var symbol in symbolList )
+            {
+                var stockResult = await this.ProcessIndividualStock(yahooUrlTemplate, symbol.Code, "1wk", 60);
+            }
+
+
+            return scanResult;
+        }
+        #endregion
+
+        #region Azure unfinished
+        public async Task<List<ScanResultEntity>> ProcessWeeklyBull(string storageConnStr,
+        string storageContainer, string symbolListFileName, int top, string yahooUrlTemplate)
         {
             List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
 
@@ -33,7 +73,7 @@ namespace Screen.ProcessFunction
                 this._log.LogInformation($"Symbol retireved {symbolList.Count}");
 
                 // TODO: change it to WaitAll
-                foreach ( var symbol in symbolList )
+                foreach (var symbol in symbolList)
                 {
                     var stockResult = await ProcessIndividualStock(yahooUrlTemplate, symbol.Code, "1wk", 60);
                 }
@@ -52,24 +92,41 @@ namespace Screen.ProcessFunction
         public async Task<List<ScanResultEntity>> ProcessIndividualStock(string urlTemplate, string symbol,
             string interval, int periodInMonth)
         {
-            this._log.LogInformation($"In ProcessIndividualStock for {symbol}");
-
             List<ScanResultEntity> scanResults = new List<ScanResultEntity>();
 
-            YahooTickManager tickerManager = new YahooTickManager(new Shared.SharedSettings
+            try
             {
-                YahooUrlTemplate = urlTemplate,
-            });
+                this._log.LogInformation($"In ProcessIndividualStock for {symbol}");
 
-            var tickString = await tickerManager.DownloadYahooTicks(symbol,
-                DateTime.Now.Date.AddMonths(-1 * periodInMonth),
-                DateTime.Now.Date,
-                interval);
+                var tickString = await this._tickerManager.DownloadYahooTicks(symbol,
+                    DateTime.Now.Date.AddMonths(-1 * periodInMonth),
+                    DateTime.Now.Date,
+                    interval);
 
-            var tickList = tickerManager.ConvertToEntities(symbol, tickString);
+                var tickList = this._tickerManager.ConvertToEntities(symbol, tickString);
+
+                this._log.LogInformation($"After retireve ticker for symbol {symbol}, count: {tickList.Count}");
+
+                var indList = this._indicatorManager.CalculateIndicators(symbol, tickList);
+
+                if (indList != null)
+                {
+                    this._log.LogInformation($"After calculate indicators for symbol {symbol}, count: {indList.Count}");
+                } else
+                {
+                    this._log.LogInformation($"After calculate indicators for symbol {symbol}, count: 0, return null from ticker");
+                }
+
+
+            } catch (Exception ex)
+            {
+                this._log.LogError($"Error in ProcessIndividualStock symbol: {symbol}, interval: {interval}," +
+                    $" periodInMonth: {periodInMonth} ");
+            }
 
             return scanResults;
-        }
 
+        }
+        #endregion
     }
 }
