@@ -66,7 +66,10 @@ namespace Screen.ProcessFunction
                     }
                 }
             }
-            
+
+            this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
+
+
             return scanResult;
         }
         #endregion
@@ -111,7 +114,7 @@ namespace Screen.ProcessFunction
 
             try
             {
-                this._log.LogInformation($"In ProcessIndividualStock for {symbol}");
+                this._log.LogDebug($"In ProcessIndividualStock for {symbol}");
 
                 var tickString = await this._tickerManager.DownloadYahooTicks(symbol,
                     DateTime.Now.Date.AddMonths(-1 * periodInMonth),
@@ -120,16 +123,16 @@ namespace Screen.ProcessFunction
 
                 var tickList = this._tickerManager.ConvertToEntities(symbol, tickString);
 
-                this._log.LogInformation($"After retireve ticker for symbol {symbol}, count: {tickList.Count}");
+                this._log.LogDebug($"After retireve ticker for symbol {symbol}, count: {tickList.Count}");
 
                 var indList = this._indicatorManager.CalculateIndicators(symbol, tickList);
 
                 if (indList != null)
                 {
-                    this._log.LogInformation($"After calculate indicators for symbol {symbol}, count: {indList.Count}");
+                    this._log.LogDebug($"After calculate indicators for symbol {symbol}, count: {indList.Count}");
                 } else
                 {
-                    this._log.LogInformation($"After calculate indicators for symbol {symbol}, count: 0, return null from ticker");
+                    this._log.LogDebug($"After calculate indicators for symbol {symbol}, count: 0, return null from ticker");
                 }
 
                 scanResults = (List<ScanResultEntity>)this._scanManager.ProcessScan(indList);
