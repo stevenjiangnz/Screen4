@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Screen.Entity;
 using Screen.Indicator;
+using Screen.Scan;
 using Screen.Symbols;
 using Screen.Ticks;
 using System;
@@ -17,6 +18,7 @@ namespace Screen.ProcessFunction
         private ILogger _log;
         private YahooTickManager _tickerManager;
         private IndicatorManager _indicatorManager;
+        private ScanManager _scanManager;
         public ScreenProcessManager(ILogger log, string yahooTemplate)
         {
             this._log = log;
@@ -27,6 +29,8 @@ namespace Screen.ProcessFunction
             });
 
             this._indicatorManager = new IndicatorManager();
+
+            this._scanManager = new ScanManager(this._log);
         }
 
         #region Google based
@@ -49,9 +53,20 @@ namespace Screen.ProcessFunction
             foreach ( var symbol in symbolList )
             {
                 var stockResult = await this.ProcessIndividualStock(yahooUrlTemplate, symbol.Code, "1wk", 60);
+                
+                if(stockResult != null && stockResult.Count > 0)
+                {
+                    var s = stockResult[0];
+
+                    if (s.ADX_CROSS_BULL.GetValueOrDefault() || s.ADX_INTO_BULL.GetValueOrDefault()
+                        || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
+                        || s.MACD_REVERSE_BULL.GetValueOrDefault())
+                    {
+                        scanResult.Add(s);
+                    }
+                }
             }
-
-
+            
             return scanResult;
         }
         #endregion
@@ -116,6 +131,8 @@ namespace Screen.ProcessFunction
                 {
                     this._log.LogInformation($"After calculate indicators for symbol {symbol}, count: 0, return null from ticker");
                 }
+
+                scanResults = (List<ScanResultEntity>)this._scanManager.ProcessScan(indList);
 
 
             } catch (Exception ex)

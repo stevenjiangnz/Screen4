@@ -110,7 +110,6 @@ namespace Screen.Function
                     }
                 }
 
-
                 List<SymbolEntity> resultList = new List<SymbolEntity>();
 
                 if (top > 0)
@@ -435,8 +434,8 @@ namespace Screen.Function
 
                         if (interval == "w")
                         {
-                            await processManager.ProcessWeeklyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
-                            return new OkObjectResult("Weekly Process finished.");
+                            var scanResult = await processManager.ProcessWeeklyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
+                            return new OkObjectResult(scanResult);
                         }
                         else if (interval == "d")
                         {
