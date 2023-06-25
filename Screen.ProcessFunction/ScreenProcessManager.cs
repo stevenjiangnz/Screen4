@@ -72,6 +72,8 @@ namespace Screen.ProcessFunction
 
             if (scanResult != null && scanResult.Count > 0)
             {
+                await _scanManager.SaveScanResultWeekly(service, scanResult, rootId);
+
                 var dateString = scanResult[0].TradingDate.ToString();
 
                 var subject = "Weekly Scan Result - " + dateString;
