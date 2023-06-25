@@ -329,6 +329,50 @@ namespace Screen.Function
             return new BadRequestResult();
         }
 
+
+        [FunctionName("store")]
+        public static async Task<IActionResult> Store(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
+            HttpRequest req,
+            Microsoft.Extensions.Logging.ILogger log)
+        {
+            log.LogInformation("In Store function method.");
+
+            try
+            {
+                string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+
+                ScanManager scanManager = new ScanManager(log);
+                DriveService driveService = GetDriveServic();
+
+                if (req.Method == "POST")
+                {
+                    // Read the request body
+                    string requestBody;
+                    using (StreamReader streamReader = new StreamReader(req.Body))
+                    {
+                        requestBody = streamReader.ReadToEnd();
+
+                        if (!string.IsNullOrEmpty(requestBody))
+                        {
+                            List<ScanResultEntity> scanResultList = ObjectHelper.FromJsonString<List<ScanResultEntity>>(requestBody);
+
+                            await scanManager.SaveScanResultWeekly(driveService, scanResultList, parentFolderId);
+
+                            return new OkObjectResult("scan result stored in google.");
+                        }
+                    }
+
+                    return new BadRequestObjectResult("Input of scan is not valid.");
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in scan.");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+            return new BadRequestResult();
+        }
         #region support functions
 
         public static void CreateJsonFile(DriveService service, string filename, string jsonContent, string parentFolderId)

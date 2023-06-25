@@ -72,6 +72,7 @@ namespace Screen.ProcessFunction
 
             return scanResult;
         }
+
         #endregion
 
         #region Azure unfinished

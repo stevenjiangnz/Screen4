@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.60.0.3082" />
   </ItemGroup>
 
   <ItemGroup>
