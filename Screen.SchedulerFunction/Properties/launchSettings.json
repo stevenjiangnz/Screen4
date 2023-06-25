@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Screen.SchedulerFunction": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7257",
+      "launchBrowser": false
+    }
+  }
+}
