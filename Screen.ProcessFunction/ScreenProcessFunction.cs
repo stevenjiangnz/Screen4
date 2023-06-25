@@ -21,6 +21,7 @@ using Google.Apis.Services;
 using System.Text;
 using System.Runtime.CompilerServices;
 using Serilog;
+using Screen.Notification;
 
 namespace Screen.Function
 {
@@ -38,6 +39,26 @@ namespace Screen.Function
             return Task.FromResult<IActionResult>(
                 new OkObjectResult($"Status ok. {testValue}" + DateTime.Now));
         }
+
+        [FunctionName("notification")]
+        public async static Task<IActionResult> Notification(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req,
+            Microsoft.Extensions.Logging.ILogger log)
+        {
+            log.LogInformation("Noticiation check called.");
+            var emailApiKey = Environment.GetEnvironmentVariable("EMAIL_API_KEY");
+            var emailApiSecret = Environment.GetEnvironmentVariable("EMAIL_API_SECRET");
+            var emailSender = Environment.GetEnvironmentVariable("EMAIL_SENDER");
+            var emailRecipients = Environment.GetEnvironmentVariable("EMAIL_RECIPIENTS");
+
+            NotificationManager notificationManager = new NotificationManager(emailApiKey, emailApiSecret, log);
+
+            await notificationManager.SendNotificationEmail(emailSender, emailRecipients, "test subjects", "my content  \n content line 2");
+
+            return new OkObjectResult($"Status ok. {emailApiKey}" + DateTime.Now);
+        }
+
 
         public static DriveService GetDriveServic()
         {
@@ -375,55 +396,6 @@ namespace Screen.Function
         }
         #region support functions
 
-        public static void CreateJsonFile(DriveService service, string filename, string jsonContent, string parentFolderId)
-        {
-            var fileMetadata = new Google.Apis.Drive.v3.Data.File()
-            {
-                Name = filename,
-                MimeType = "application/json",
-                Parents = new List<string> { parentFolderId }
-            };
-
-            byte[] byteArray = Encoding.UTF8.GetBytes(jsonContent);
-            using (MemoryStream stream = new MemoryStream(byteArray))
-            {
-                FilesResource.CreateMediaUpload request = service.Files.Create(fileMetadata, stream, "application/json");
-                request.Fields = "id";
-                request.Upload();
-            }
-
-            Console.WriteLine("File created with ID: " + fileMetadata.Id);
-        }
-
-
-        public static void ListFilesInFolder(DriveService service, string folderId, string indent = "")
-        {
-            // Define parameters of request.
-            FilesResource.ListRequest listRequest = service.Files.List();
-            listRequest.Q = $"'{folderId}' in parents";
-            listRequest.Fields = "nextPageToken, files(id, name, mimeType)";
-
-            // List all files and folders.
-            IList<Google.Apis.Drive.v3.Data.File> files = listRequest.Execute().Files;
-            Console.WriteLine(indent + "Files and folders:");
-            if (files != null && files.Count > 0)
-            {
-                foreach (var file in files)
-                {
-                    Console.WriteLine(indent + "{0} ({1})", file.Name, file.Id);
-
-                    // If the file is a folder, recurse into it.
-                    if (file.MimeType == "application/vnd.google-apps.folder")
-                    {
-                        ListFilesInFolder(service, file.Id, indent + "  ");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine(indent + "No files or folders found.");
-            }
-        }
 
         [FunctionName("process")]
         public static async Task<IActionResult> GoogleProcess(

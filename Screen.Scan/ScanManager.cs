@@ -8,10 +8,10 @@ namespace Screen.Scan
 {
     public class ScanManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger _log;
         public ScanManager(ILogger log)
         {
-            this._logger = log;
+            this._log = log;
         }
 
         public IList<ScanResultEntity> ProcessScan(IList<IndicatorEntity> indicators, int? dateToProcess = null)
@@ -91,7 +91,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_MACD_REVERSE_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_MACD_REVERSE_BULL" + ex.ToString());
             }
             return result;
         }
@@ -116,7 +116,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
             }
             return result;
         }
@@ -146,7 +146,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
             }
             return result;
         }
@@ -171,7 +171,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
             }
             return result;
         }
@@ -196,14 +196,14 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
             }
             return result;
         }
 
         public async Task SaveScanResultWeekly(DriveService service, List<ScanResultEntity> scanResultList, string rootID)
         {
-            this._logger.LogInformation(" in Save Scan Result weekly");
+            this._log.LogInformation(" in Save Scan Result weekly");
 
 
             if (scanResultList != null && scanResultList.Count > 0)
@@ -217,7 +217,7 @@ namespace Screen.Scan
 
                 UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
 
-                this._logger.LogInformation($"After upload weekly scan result to  {fileName} {folderId}");
+                this._log.LogInformation($"After upload weekly scan result to  {fileName} {folderId}");
             }
         }
 

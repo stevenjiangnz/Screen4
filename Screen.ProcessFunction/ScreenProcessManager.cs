@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Screen.Entity;
 using Screen.Indicator;
+using Screen.Notification;
 using Screen.Scan;
 using Screen.Symbols;
 using Screen.Ticks;
@@ -69,8 +70,29 @@ namespace Screen.ProcessFunction
 
             this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
 
+            if (scanResult != null && scanResult.Count > 0)
+            {
+                var dateString = scanResult[0].TradingDate.ToString();
+
+                var subject = "Weekly Scan Result - " + dateString;
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
+
+                await this.SendNotificationEmail(subject, body);
+            }
 
             return scanResult;
+        }
+
+        public async Task SendNotificationEmail(string subject, string body)
+        {
+            var emailApiKey = Environment.GetEnvironmentVariable("EMAIL_API_KEY");
+            var emailApiSecret = Environment.GetEnvironmentVariable("EMAIL_API_SECRET");
+            var emailSender = Environment.GetEnvironmentVariable("EMAIL_SENDER");
+            var emailRecipients = Environment.GetEnvironmentVariable("EMAIL_RECIPIENTS");
+
+            NotificationManager notificationManager = new NotificationManager(emailApiKey, emailApiSecret, this._log);
+
+            await notificationManager.SendNotificationEmail(emailSender, emailRecipients, subject, body);   
         }
 
         #endregion

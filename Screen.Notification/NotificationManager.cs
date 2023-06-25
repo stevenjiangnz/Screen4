@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace Screen.Notification
 {
@@ -6,30 +7,25 @@ namespace Screen.Notification
     {
         private string _apiKey;
         private string _apiKeySecret;
+        private readonly ILogger _log;
 
-        public NotificationManager(string apiKey, string secret)
+        public NotificationManager(string apiKey, string secret, ILogger logger)
         {
             this._apiKey = apiKey;
             this._apiKeySecret = secret;
+            this._log = logger;
         }
 
-        public async Task SendEmail()
-        {
-            string api_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXX";
-            string api_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-            string sender_email = "stevenjiangnz@gmail.com";
-            string recipient_email = "steven.jiang@shell.com";
-            string subject = "Example Email - Scan Result";
-            string body = "This is the content of the email.";
 
-            string filePath = @"C:\data\Fulllist.csv";
-            string fileName = "fulllist.csv";
-            byte[] fileBytes = File.ReadAllBytes(filePath);
-            string fileBase64 = Convert.ToBase64String(fileBytes);
+        public async Task SendNotificationEmail(string sender, string recipients, string subject, string content)
+        {
+            string sender_email = sender;
+            string recipient_email = recipients;
+            string body = content.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
 
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(api_key + ":" + api_secret)));
+                client.DefaultRequestHeaders.Add("Authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(this._apiKey + ":" + this._apiKeySecret)));
 
                 string url = "https://api.mailjet.com/v3.1/send";
 
@@ -45,31 +41,28 @@ namespace Screen.Notification
                                 "}" +
                             "]," +
                             "\"Subject\": \"" + subject + "\"," +
-                            "\"TextPart\": \"" + body + "\"," +
-                            "\"Attachments\": [" +
-                                "{" +
-                                    "\"ContentType\": \"text/csv\"," +
-                                    "\"Filename\": \"" + fileName + "\"," +
-                                    "\"Base64Content\": \"" + fileBase64 + "\"" +
-                                "}" +
-                            "]" +
+                            "\"HTMLPart\": \"" + body + "\"" +
                         "}" +
                     "]" +
                 "}";
 
-                StringContent content = new StringContent(payload, Encoding.UTF8, "application/json");
-                HttpResponseMessage response = await client.PostAsync(url, content);
+                StringContent emailContent = new StringContent(payload, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(url, emailContent);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Email sent successfully!");
+                    this._log.LogInformation("Email sent successfully!");
                 }
                 else
                 {
-                    Console.WriteLine("Failed to send email. Status code: " + (int)response.StatusCode);
-                    Console.WriteLine("Response: " + await response.Content.ReadAsStringAsync());
+                    this._log.LogError("Failed to send email. Status code: " + (int)response.StatusCode);
+                    this._log.LogError("Response: " + await response.Content.ReadAsStringAsync());
+
+                    throw new Exception("Error in sending email...");
                 }
             }
         }
+
+
     }
 }
