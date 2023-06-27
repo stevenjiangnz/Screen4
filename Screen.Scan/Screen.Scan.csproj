@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Screen.Access\Screen.Access.csproj" />
     <ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
     <ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
   </ItemGroup>

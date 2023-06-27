@@ -19,8 +19,6 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using System.Text;
-using System.Runtime.CompilerServices;
-using Serilog;
 using Screen.Notification;
 
 namespace Screen.Function
@@ -78,8 +76,6 @@ namespace Screen.Function
 
             return service;
         }
-
-
 
         [FunctionName("symbol")]
         public static async Task<IActionResult> GoogleSymbol(
@@ -482,166 +478,166 @@ namespace Screen.Function
         #endregion
 
         #region Azure Storage for Symbol List
-        [FunctionName("azureprocess")]
-        public static async Task<IActionResult> AzureProcess(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req,
-            Microsoft.Extensions.Logging.ILogger log)
-        {
-            try
-            {
-                var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
-                var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
-                var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
+        //[FunctionName("azureprocess")]
+        //public static async Task<IActionResult> AzureProcess(
+        //    [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+        //    HttpRequest req,
+        //    Microsoft.Extensions.Logging.ILogger log)
+        //{
+        //    try
+        //    {
+        //        var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
+        //        var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
+        //        var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
 
-                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+        //        var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
 
-                string interval = "d"; // d for daily or w for weekly
+        //        string interval = "d"; // d for daily or w for weekly
 
-                // top -1 means return all, otherwise take the number defined in top
-                int top = 300;
-                string topString = string.Empty;
+        //        // top -1 means return all, otherwise take the number defined in top
+        //        int top = 300;
+        //        string topString = string.Empty;
 
-                var queryDict = req.GetQueryParameterDictionary();
+        //        var queryDict = req.GetQueryParameterDictionary();
 
-                if (queryDict != null)
-                {
-                    try
-                    {
-                        if (queryDict.ContainsKey("top"))
-                        {
-                            topString = queryDict["top"];
+        //        if (queryDict != null)
+        //        {
+        //            try
+        //            {
+        //                if (queryDict.ContainsKey("top"))
+        //                {
+        //                    topString = queryDict["top"];
 
-                            if (!string.IsNullOrEmpty(topString))
-                            {
-                                top = int.Parse(topString);
-                            }
-                        }
+        //                    if (!string.IsNullOrEmpty(topString))
+        //                    {
+        //                        top = int.Parse(topString);
+        //                    }
+        //                }
 
-                        if (queryDict.ContainsKey("interval"))
-                        {
-                            interval = queryDict["interval"].ToString().ToLower();
+        //                if (queryDict.ContainsKey("interval"))
+        //                {
+        //                    interval = queryDict["interval"].ToString().ToLower();
 
-                            if (interval != "d" && interval != "w")
-                            {
-                                throw new ArgumentException("interval can be either 'd' or 'w'");
-                            }
-                        }
+        //                    if (interval != "d" && interval != "w")
+        //                    {
+        //                        throw new ArgumentException("interval can be either 'd' or 'w'");
+        //                    }
+        //                }
 
-                        ScreenProcessManager processManager = new ScreenProcessManager(log, yahooUrlTemplate);
+        //                ScreenProcessManager processManager = new ScreenProcessManager(log, yahooUrlTemplate);
 
-                        if (interval == "w")
-                        {
-                            await processManager.ProcessWeeklyBull(storageConnString, storageContainer, symbolListFileName, top, yahooUrlTemplate);
-                            return new OkObjectResult("Weekly Process finished.");
-                        }
-                        else if (interval == "d")
-                        {
-                            return new OkObjectResult("Daily Process finished.");
-                        }
+        //                if (interval == "w")
+        //                {
+        //                    await processManager.ProcessWeeklyBull(storageConnString, storageContainer, symbolListFileName, top, yahooUrlTemplate);
+        //                    return new OkObjectResult("Weekly Process finished.");
+        //                }
+        //                else if (interval == "d")
+        //                {
+        //                    return new OkObjectResult("Daily Process finished.");
+        //                }
 
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgumentException($"Error parse input parameter {topString}", ex);
-                    }
-                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                throw new ArgumentException($"Error parse input parameter {topString}", ex);
+        //            }
+        //        }
 
-                return new OkObjectResult("Process error, unknown inputs.");
-            }
-            catch (ArgumentException ex)
-            {
-                log.LogError(ex, "Error arguments in Symbol");
-                return new BadRequestObjectResult(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "Error in Symbol");
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-            }
-        }
+        //        return new OkObjectResult("Process error, unknown inputs.");
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        log.LogError(ex, "Error arguments in Symbol");
+        //        return new BadRequestObjectResult(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.LogError(ex, "Error in Symbol");
+        //        return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+        //    }
+        //}
 
-        [FunctionName("azuresymbol")]
-        public static async Task<IActionResult> AzureSymbol(
-    [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req,
-    Microsoft.Extensions.Logging.ILogger log)
-        {
-            try
-            {
-                var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
-                var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
-                var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
+    //    [FunctionName("azuresymbol")]
+    //    public static async Task<IActionResult> AzureSymbol(
+    //[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+    //        HttpRequest req,
+    //Microsoft.Extensions.Logging.ILogger log)
+    //    {
+    //        try
+    //        {
+    //            var storageConnString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING");
+    //            var storageContainer = Environment.GetEnvironmentVariable("STORAGE_CONTAINER");
+    //            var symbolListFileName = Environment.GetEnvironmentVariable("SYMBOL_LIST_FILE_NAME");
 
 
-                // top -1 means return all, otherwise take the number defined in top
-                int top = -1;
-                string topString = string.Empty;
+    //            // top -1 means return all, otherwise take the number defined in top
+    //            int top = -1;
+    //            string topString = string.Empty;
 
-                string output = "json";
+    //            string output = "json";
 
-                var queryDict = req.GetQueryParameterDictionary();
+    //            var queryDict = req.GetQueryParameterDictionary();
 
-                if (queryDict != null)
-                {
-                    try
-                    {
-                        if (queryDict.ContainsKey("top"))
-                        {
-                            topString = queryDict["top"];
+    //            if (queryDict != null)
+    //            {
+    //                try
+    //                {
+    //                    if (queryDict.ContainsKey("top"))
+    //                    {
+    //                        topString = queryDict["top"];
 
-                            if (!string.IsNullOrEmpty(topString))
-                            {
-                                top = int.Parse(topString);
-                            }
-                        }
+    //                        if (!string.IsNullOrEmpty(topString))
+    //                        {
+    //                            top = int.Parse(topString);
+    //                        }
+    //                    }
 
-                        if (queryDict.ContainsKey("output"))
-                        {
-                            output = queryDict["output"];
-                        }
+    //                    if (queryDict.ContainsKey("output"))
+    //                    {
+    //                        output = queryDict["output"];
+    //                    }
 
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgumentException($"Error parse input parameter {topString}", ex);
-                    }
-                }
+    //                }
+    //                catch (Exception ex)
+    //                {
+    //                    throw new ArgumentException($"Error parse input parameter {topString}", ex);
+    //                }
+    //            }
 
-                SymbolManager symbolManager = new SymbolManager(log);
+    //            SymbolManager symbolManager = new SymbolManager(log);
 
-                List<SymbolEntity> resultList = new List<SymbolEntity>();
+    //            List<SymbolEntity> resultList = new List<SymbolEntity>();
 
-                if (top > 0)
-                {
-                    resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName, top);
-                }
-                else
-                {
-                    resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName);
-                }
+    //            if (top > 0)
+    //            {
+    //                resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName, top);
+    //            }
+    //            else
+    //            {
+    //                resultList = await symbolManager.GetSymbolsFromAzureStorage(storageConnString, storageContainer, symbolListFileName);
+    //            }
 
-                if (output == "json")
-                {
-                    return new JsonResult(resultList);
-                }
-                else
-                {
-                    return new OkObjectResult(symbolManager.GetStringFromSymbolList(resultList));
-                }
+    //            if (output == "json")
+    //            {
+    //                return new JsonResult(resultList);
+    //            }
+    //            else
+    //            {
+    //                return new OkObjectResult(symbolManager.GetStringFromSymbolList(resultList));
+    //            }
 
-            }
-            catch (ArgumentException ex)
-            {
-                log.LogError(ex, "Error arguments in Symbol");
-                return new BadRequestObjectResult(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "Error in Symbol");
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-            }
-        }
+    //        }
+    //        catch (ArgumentException ex)
+    //        {
+    //            log.LogError(ex, "Error arguments in Symbol");
+    //            return new BadRequestObjectResult(ex.Message);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            log.LogError(ex, "Error in Symbol");
+    //            return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+    //        }
+    //    }
 
         #endregion
     }
