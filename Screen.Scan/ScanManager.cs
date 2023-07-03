@@ -222,6 +222,27 @@ namespace Screen.Scan
             }
         }
 
+        public async Task SaveScanResultDaily(DriveService service, List<ScanResultEntity> scanResultList, string rootID)
+        {
+            this._log.LogInformation(" in Save Scan Result daily");
+
+
+            if (scanResultList != null && scanResultList.Count > 0)
+            {
+                var dateScan = scanResultList[0].TradingDate.ToString();
+                var csvString = ConvertToCsv<ScanResultEntity>(scanResultList);
+
+                var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, dateScan.Substring(0, 6));
+
+                var fileName = $"daily_scanresult_{dateScan}.csv";
+
+                GoogleDriveManager.UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
+
+                this._log.LogInformation($"After upload daily scan result to  {fileName} {folderId}");
+            }
+        }
+
+
         public static string ConvertToCsv<T>(IEnumerable<T> data)
         {
             using (var writer = new StringWriter())

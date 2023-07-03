@@ -73,7 +73,8 @@ namespace Screen.Ticks
 
             foreach (string line in lines)
             {
-                if (!line.Contains("Date,"))
+                // take out the invalid lines
+                if ((!line.Contains("Date,")) && (!line.Contains("null,null")))
                 {
                     try
                     {

@@ -83,6 +83,58 @@ namespace Screen.ProcessFunction
             return scanResult;
         }
 
+
+        public async Task<List<ScanResultEntity>> ProcessDailyBull(DriveService service,
+            string rootId,
+            string symbolListFileName,
+            int top,
+            string yahooUrlTemplate)
+        {
+            this._log.LogInformation("in ProcessDailyBull");
+
+            List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
+
+            SymbolManager symbolManager = new SymbolManager(this._log);
+
+            var symbolList = await symbolManager.GetSymbolsFromGoogleStorage(service, rootId, symbolListFileName, top);
+
+            this._log.LogInformation($"After get Symbol, returned {symbolList.Count}");
+
+            foreach (var symbol in symbolList)
+            {
+                var stockResult = await this.ProcessIndividualStock(yahooUrlTemplate, symbol.Code, "1d", 15);
+
+                if (stockResult != null && stockResult.Count > 0)
+                {
+                    var s = stockResult[0];
+
+                    if (s.ADX_CROSS_BULL.GetValueOrDefault() || s.ADX_INTO_BULL.GetValueOrDefault()
+                        || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
+                        || s.MACD_REVERSE_BULL.GetValueOrDefault())
+                    {
+                        scanResult.Add(s);
+                    }
+                }
+            }
+
+            this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
+
+            if (scanResult != null && scanResult.Count > 0)
+            {
+                await _scanManager.SaveScanResultDaily(service, scanResult, rootId);
+
+                var dateString = scanResult[0].TradingDate.ToString();
+
+                var subject = "Daily Scan Result - " + dateString;
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
+
+                await this.SendNotificationEmail(subject, body);
+            }
+
+            return scanResult;
+        }
+
+
         public async Task SendNotificationEmail(string subject, string body)
         {
             var emailApiKey = Environment.GetEnvironmentVariable("EMAIL_API_KEY");

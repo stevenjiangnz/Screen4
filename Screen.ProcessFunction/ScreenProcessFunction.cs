@@ -451,7 +451,9 @@ namespace Screen.Function
                         }
                         else if (interval == "d")
                         {
-                            return new OkObjectResult("Daily Process finished.");
+                            var scanResult = await processManager.ProcessDailyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
+
+                            return new OkObjectResult(scanResult);
                         }
 
                     }
