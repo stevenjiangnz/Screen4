@@ -8,6 +8,7 @@ using Screen.Symbols;
 using Screen.Ticks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Screen.ProcessFunction
@@ -66,6 +67,8 @@ namespace Screen.ProcessFunction
                 }
             }
 
+            scanResult = scanResult.OrderBy(m=>m.Symbol).ToList();
+
             this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
 
             if (scanResult != null && scanResult.Count > 0)
@@ -97,6 +100,8 @@ namespace Screen.ProcessFunction
             SymbolManager symbolManager = new SymbolManager(this._log);
 
             var symbolList = await symbolManager.GetSymbolsFromGoogleStorage(service, rootId, symbolListFileName, top);
+
+            scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
 
             this._log.LogInformation($"After get Symbol, returned {symbolList.Count}");
 
