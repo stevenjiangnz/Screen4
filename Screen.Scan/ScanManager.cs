@@ -1,14 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CsvHelper;
+using Google.Apis.Drive.v3;
+using Microsoft.Extensions.Logging;
+using Screen.Access;
 using Screen.Entity;
+using System.Globalization;
 
 namespace Screen.Scan
 {
     public class ScanManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger _log;
         public ScanManager(ILogger log)
         {
-            this._logger = log;
+            this._log = log;
         }
 
         public IList<ScanResultEntity> ProcessScan(IList<IndicatorEntity> indicators, int? dateToProcess = null)
@@ -88,7 +92,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_MACD_REVERSE_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_MACD_REVERSE_BULL" + ex.ToString());
             }
             return result;
         }
@@ -113,7 +117,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
             }
             return result;
         }
@@ -143,7 +147,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
             }
             return result;
         }
@@ -168,7 +172,7 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
             }
             return result;
         }
@@ -193,9 +197,61 @@ namespace Screen.Scan
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
             }
             return result;
+        }
+
+        public async Task SaveScanResultWeekly(DriveService service, List<ScanResultEntity> scanResultList, string rootID)
+        {
+            this._log.LogInformation(" in Save Scan Result weekly");
+
+
+            if (scanResultList != null && scanResultList.Count > 0)
+            {
+                var dateScan = scanResultList[0].TradingDate.ToString();
+                var csvString = ConvertToCsv<ScanResultEntity>(scanResultList);
+
+                var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, dateScan.Substring(0,6));
+
+                var fileName = $"weekly_scanresult_{dateScan}.csv";
+
+                GoogleDriveManager.UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
+
+                this._log.LogInformation($"After upload weekly scan result to  {fileName} {folderId}");
+            }
+        }
+
+        public async Task SaveScanResultDaily(DriveService service, List<ScanResultEntity> scanResultList, string rootID)
+        {
+            this._log.LogInformation(" in Save Scan Result daily");
+
+
+            if (scanResultList != null && scanResultList.Count > 0)
+            {
+                var dateScan = scanResultList[0].TradingDate.ToString();
+                var csvString = ConvertToCsv<ScanResultEntity>(scanResultList);
+
+                var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, dateScan.Substring(0, 6));
+
+                var fileName = $"daily_scanresult_{dateScan}.csv";
+
+                GoogleDriveManager.UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
+
+                this._log.LogInformation($"After upload daily scan result to  {fileName} {folderId}");
+            }
+        }
+
+
+        public static string ConvertToCsv<T>(IEnumerable<T> data)
+        {
+            using (var writer = new StringWriter())
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(data);
+                csv.Flush();
+                return writer.ToString();
+            }
         }
 
     }

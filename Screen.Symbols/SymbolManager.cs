@@ -10,6 +10,7 @@ using Screen.Shared;
 using Google.Apis.Drive.v3;
 using Google.Apis.Download;
 using System;
+using CsvHelper.TypeConversion;
 
 namespace Screen.Symbols
 {
@@ -168,17 +169,25 @@ namespace Screen.Symbols
         {
             public SymbolEntityMap()
             {
-                Map(m => m.Code);
-                Map(m => m.Company);
-                Map(m => m.Sector);
-                Map(m => m.MarketCap).Convert(
-                    (row) => long.Parse(row.Row.GetField("MarketCap").Replace(",", ""))
-                );
-                Map(m => m.Weight);
-
+                Map(m => m.Code).Index(0);
+                Map(m => m.Company).Index(1);
+                Map(m => m.Sector).Index(2);
+                Map(m => m.ListDate).Index(3).TypeConverterOption.Format("dd/MM/yyyy"); ;
+                Map(m => m.MarketCap).Index(4).TypeConverter<StringToMarketCapConverter>();
             }
         }
 
+        public class StringToMarketCapConverter : DefaultTypeConverter
+        {
+            public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+            {
+                if (!long.TryParse(text, out long marketCap))
+                {
+                    marketCap = 0;
+                }
 
+                return marketCap;
+            }
+        }
     }
 }

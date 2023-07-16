@@ -46,7 +46,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{122CB960-E911-4AAE-9E1C-C16DD949DB39}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\cicd-pipeline-deploy.yaml.old = .github\workflows\cicd-pipeline-deploy.yaml.old
-		.github\workflows\cicd-pipeline.yaml = .github\workflows\cicd-pipeline.yaml
+		.github\workflows\cicd-pipeline.yaml.old = .github\workflows\cicd-pipeline.yaml.old
+		.github\workflows\main_screen4processfunctionmain.yml = .github\workflows\main_screen4processfunctionmain.yml
 	EndProjectSection
 EndProject
 Global

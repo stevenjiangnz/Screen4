@@ -89,8 +89,6 @@ namespace Screen.Indicator
                 k = 100;
             }
 
-            Console.WriteLine($"high: {highest} low: {lowest} close: {close} k: {k}");
-
             return k;
         }
     }

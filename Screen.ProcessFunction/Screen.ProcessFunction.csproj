@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Screen.Access\Screen.Access.csproj" />
     <ProjectReference Include="..\Screen.Indicator\Screen.Indicator.csproj" />
+    <ProjectReference Include="..\Screen.Notification\Screen.Notification.csproj" />
     <ProjectReference Include="..\Screen.Scan\Screen.Scan.csproj" />
     <ProjectReference Include="..\Screen.Symbols\Screen.Symbols.csproj" />
     <ProjectReference Include="..\ScreenTicks\Screen.Ticks.csproj" />
