@@ -77,7 +77,7 @@ namespace Screen.ProcessFunction
 
                 var dateString = scanResult[0].TradingDate.ToString();
 
-                var subject = "Weekly Scan Result - " + dateString;
+                var subject = "Weekly Scan Result - " + dateString + $" ({scanResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
 
                 await this.SendNotificationEmail(subject, body);
@@ -130,7 +130,7 @@ namespace Screen.ProcessFunction
 
                 var dateString = scanResult[0].TradingDate.ToString();
 
-                var subject = "Daily Scan Result - " + dateString;
+                var subject = "Daily Scan Result - " + dateString + $" ({scanResult.Count})"; 
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
 
                 await this.SendNotificationEmail(subject, body);
