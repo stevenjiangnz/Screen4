@@ -67,12 +67,12 @@ namespace Screen.ProcessFunction
                 }
             }
 
-            scanResult = scanResult.OrderBy(m=>m.Symbol).ToList();
-
             this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
 
             if (scanResult != null && scanResult.Count > 0)
             {
+                scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
+
                 await _scanManager.SaveScanResultWeekly(service, scanResult, rootId);
 
                 var dateString = scanResult[0].TradingDate.ToString();
@@ -101,8 +101,6 @@ namespace Screen.ProcessFunction
 
             var symbolList = await symbolManager.GetSymbolsFromGoogleStorage(service, rootId, symbolListFileName, top);
 
-            scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
-
             this._log.LogInformation($"After get Symbol, returned {symbolList.Count}");
 
             foreach (var symbol in symbolList)
@@ -126,6 +124,8 @@ namespace Screen.ProcessFunction
 
             if (scanResult != null && scanResult.Count > 0)
             {
+                scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
+
                 await _scanManager.SaveScanResultDaily(service, scanResult, rootId);
 
                 var dateString = scanResult[0].TradingDate.ToString();
