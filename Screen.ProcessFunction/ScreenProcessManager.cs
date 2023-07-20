@@ -99,6 +99,7 @@ namespace Screen.ProcessFunction
             this._log.LogInformation("in ProcessDailyBull");
 
             List<ScanResultEntity> scanResultbull = new List<ScanResultEntity>();
+            List<ScanResultEntity> scanResultbear = new List<ScanResultEntity>();
 
             SymbolManager symbolManager = new SymbolManager(this._log);
 
@@ -125,6 +126,18 @@ namespace Screen.ProcessFunction
                         s.ADX_TREND_BEAR = null;
                         scanResultbull.Add(s);
                     }
+
+                    if (s.ADX_CROSS_BEAR.GetValueOrDefault() || s.ADX_INTO_BEAR.GetValueOrDefault()
+                    || s.ADX_TREND_BEAR.GetValueOrDefault() || s.MACD_CROSS_BEAR.GetValueOrDefault()
+                    || s.MACD_REVERSE_BEAR.GetValueOrDefault())
+                    {
+                        s.MACD_CROSS_BULL = null;
+                        s.MACD_REVERSE_BULL = null;
+                        s.ADX_CROSS_BULL = null;
+                        s.ADX_INTO_BULL = null;
+                        s.ADX_TREND_BULL = null;
+                        scanResultbear.Add(s);
+                    }
                 }
             }
 
@@ -140,6 +153,21 @@ namespace Screen.ProcessFunction
 
                 var subject = "Daily Scan Result (Bull) - " + dateString + $" ({scanResultbull.Count})"; 
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbull);
+
+                await this.SendNotificationEmail(subject, body);
+            }
+
+
+            if (scanResultbear != null && scanResultbear.Count > 0)
+            {
+                scanResultbear = scanResultbear.OrderBy(m => m.Symbol).ToList();
+
+                await _scanManager.SaveScanResultDaily(service, scanResultbear, rootId, "bear");
+
+                var dateString = scanResultbear[0].TradingDate.ToString();
+
+                var subject = "Daily Scan Result (Bear) - " + dateString + $" ({scanResultbear.Count})";
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbear);
 
                 await this.SendNotificationEmail(subject, body);
             }
