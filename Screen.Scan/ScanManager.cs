@@ -388,7 +388,7 @@ double?[] diMinusArray)
             }
         }
 
-        public async Task SaveScanResultDaily(DriveService service, List<ScanResultEntity> scanResultList, string rootID)
+        public async Task SaveScanResultDaily(DriveService service, List<ScanResultEntity> scanResultList, string rootID, string direction = "bull")
         {
             this._log.LogInformation(" in Save Scan Result daily");
 
@@ -400,7 +400,7 @@ double?[] diMinusArray)
 
                 var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, dateScan.Substring(0, 6));
 
-                var fileName = $"daily_scanresult_{dateScan}.csv";
+                var fileName = $"daily_scanresult_{direction}_{dateScan}.csv";
 
                 GoogleDriveManager.UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
 

@@ -98,7 +98,7 @@ namespace Screen.ProcessFunction
         {
             this._log.LogInformation("in ProcessDailyBull");
 
-            List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
+            List<ScanResultEntity> scanResultbll = new List<ScanResultEntity>();
 
             SymbolManager symbolManager = new SymbolManager(this._log);
 
@@ -116,33 +116,35 @@ namespace Screen.ProcessFunction
 
                     if (s.ADX_CROSS_BULL.GetValueOrDefault() || s.ADX_INTO_BULL.GetValueOrDefault()
                         || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
-                        || s.MACD_REVERSE_BULL.GetValueOrDefault() ||
-                        s.ADX_CROSS_BEAR.GetValueOrDefault() || s.ADX_INTO_BEAR.GetValueOrDefault()
-                        || s.ADX_TREND_BEAR.GetValueOrDefault() || s.MACD_CROSS_BEAR.GetValueOrDefault()
-                        || s.MACD_REVERSE_BEAR.GetValueOrDefault())
+                        || s.MACD_REVERSE_BULL.GetValueOrDefault())
                     {
-                        scanResult.Add(s);
+                        s.MACD_CROSS_BEAR = null;
+                        s.MACD_REVERSE_BEAR = null;
+                        s.ADX_CROSS_BEAR = null;
+                        s.ADX_INTO_BEAR = null;
+                        s.ADX_TREND_BEAR = null;
+                        scanResultbll.Add(s);
                     }
                 }
             }
 
-            this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
+            this._log.LogInformation($"After scan indicator, returned {scanResultbll.Count}");
 
-            if (scanResult != null && scanResult.Count > 0)
+            if (scanResultbll != null && scanResultbll.Count > 0)
             {
-                scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
+                scanResultbll = scanResultbll.OrderBy(m => m.Symbol).ToList();
 
-                await _scanManager.SaveScanResultDaily(service, scanResult, rootId);
+                await _scanManager.SaveScanResultDaily(service, scanResultbll, rootId, "bull");
 
-                var dateString = scanResult[0].TradingDate.ToString();
+                var dateString = scanResultbll[0].TradingDate.ToString();
 
-                var subject = "Daily Scan Result - " + dateString + $" ({scanResult.Count})"; 
-                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
+                var subject = "Daily Scan Result (Bull) - " + dateString + $" ({scanResultbll.Count})"; 
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbll);
 
                 await this.SendNotificationEmail(subject, body);
             }
 
-            return scanResult;
+            return scanResultbll;
         }
 
 
