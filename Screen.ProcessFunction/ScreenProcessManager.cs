@@ -98,7 +98,7 @@ namespace Screen.ProcessFunction
         {
             this._log.LogInformation("in ProcessDailyBull");
 
-            List<ScanResultEntity> scanResultbll = new List<ScanResultEntity>();
+            List<ScanResultEntity> scanResultbull = new List<ScanResultEntity>();
 
             SymbolManager symbolManager = new SymbolManager(this._log);
 
@@ -123,28 +123,28 @@ namespace Screen.ProcessFunction
                         s.ADX_CROSS_BEAR = null;
                         s.ADX_INTO_BEAR = null;
                         s.ADX_TREND_BEAR = null;
-                        scanResultbll.Add(s);
+                        scanResultbull.Add(s);
                     }
                 }
             }
 
-            this._log.LogInformation($"After scan indicator, returned {scanResultbll.Count}");
+            this._log.LogInformation($"After scan indicator, returned {scanResultbull.Count}");
 
-            if (scanResultbll != null && scanResultbll.Count > 0)
+            if (scanResultbull != null && scanResultbull.Count > 0)
             {
-                scanResultbll = scanResultbll.OrderBy(m => m.Symbol).ToList();
+                scanResultbull = scanResultbull.OrderBy(m => m.Symbol).ToList();
 
-                await _scanManager.SaveScanResultDaily(service, scanResultbll, rootId, "bull");
+                await _scanManager.SaveScanResultDaily(service, scanResultbull, rootId, "bull");
 
-                var dateString = scanResultbll[0].TradingDate.ToString();
+                var dateString = scanResultbull[0].TradingDate.ToString();
 
-                var subject = "Daily Scan Result (Bull) - " + dateString + $" ({scanResultbll.Count})"; 
-                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbll);
+                var subject = "Daily Scan Result (Bull) - " + dateString + $" ({scanResultbull.Count})"; 
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbull);
 
                 await this.SendNotificationEmail(subject, body);
             }
 
-            return scanResultbll;
+            return scanResultbull;
         }
 
 
