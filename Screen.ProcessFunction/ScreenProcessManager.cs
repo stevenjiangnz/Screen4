@@ -60,7 +60,10 @@ namespace Screen.ProcessFunction
 
                     if (s.ADX_CROSS_BULL.GetValueOrDefault() || s.ADX_INTO_BULL.GetValueOrDefault()
                         || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
-                        || s.MACD_REVERSE_BULL.GetValueOrDefault())
+                        || s.MACD_REVERSE_BULL.GetValueOrDefault() ||
+                        s.ADX_CROSS_BEAR.GetValueOrDefault() || s.ADX_INTO_BEAR.GetValueOrDefault()
+                        || s.ADX_TREND_BEAR.GetValueOrDefault() || s.MACD_CROSS_BEAR.GetValueOrDefault()
+                        || s.MACD_REVERSE_BEAR.GetValueOrDefault())
                     {
                         scanResult.Add(s);
                     }
@@ -113,7 +116,10 @@ namespace Screen.ProcessFunction
 
                     if (s.ADX_CROSS_BULL.GetValueOrDefault() || s.ADX_INTO_BULL.GetValueOrDefault()
                         || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
-                        || s.MACD_REVERSE_BULL.GetValueOrDefault())
+                        || s.MACD_REVERSE_BULL.GetValueOrDefault() ||
+                        s.ADX_CROSS_BEAR.GetValueOrDefault() || s.ADX_INTO_BEAR.GetValueOrDefault()
+                        || s.ADX_TREND_BEAR.GetValueOrDefault() || s.MACD_CROSS_BEAR.GetValueOrDefault()
+                        || s.MACD_REVERSE_BEAR.GetValueOrDefault())
                     {
                         scanResult.Add(s);
                     }

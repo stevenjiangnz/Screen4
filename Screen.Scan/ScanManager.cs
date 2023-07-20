@@ -33,20 +33,30 @@ namespace Screen.Scan
             for (int i = 0; i < periodArray.Length; i++)
             {
                 var isReverseBull = this.Check_MACD_REVERSE_BULL(i, macdArray, macdSignalArray, macdHistArray);
+                var isReverseBear = this.Check_MACD_REVERSE_BEAR(i, macdArray, macdSignalArray, macdHistArray);
                 var isCrossBull = this.Check_MACD_CROSS_BULL(i, macdArray, macdSignalArray, macdHistArray);
+                var isCrossBear = this.Check_MACD_CROSS_BEAR(i, macdArray, macdSignalArray, macdHistArray);
                 var isAdxBull = this.Check_ADX_INTO_BULL(i, adxArray, diPlusArray, diMinusArray);
+                var isAdxBear = this.Check_ADX_INTO_BEAR(i, adxArray, diPlusArray, diMinusArray);
                 var isAdxCrossBull = this.Check_ADX_CROSS_BULL(i, adxArray, diPlusArray, diMinusArray);
+                var isAdxCrossBear = this.Check_ADX_CROSS_BEAR(i, adxArray, diPlusArray, diMinusArray);
                 var isAdxTrendBull = this.Check_ADX_TREND_BULL(i, adxArray, diPlusArray, diMinusArray);
+                var isAdxTrendBear = this.Check_ADX_TREND_BEAR(i, adxArray, diPlusArray, diMinusArray);
 
                 var scanResult = new ScanResultEntity()
                 {
                     Symbol = orderedIndicators[0].Code,
                     TradingDate = periodArray[i],
                     MACD_REVERSE_BULL = isReverseBull,
+                    MACD_REVERSE_BEAR = isReverseBear,
                     MACD_CROSS_BULL = isCrossBull,
+                    MACD_CROSS_BEAR = isCrossBear,
                     ADX_INTO_BULL = isAdxBull,
+                    ADX_INTO_BEAR = isAdxBear,
                     ADX_CROSS_BULL = isAdxCrossBull,
-                    ADX_TREND_BULL = isAdxTrendBull
+                    ADX_CROSS_BEAR = isAdxCrossBear,
+                    ADX_TREND_BULL = isAdxTrendBull,
+                    ADX_TREND_BEAR = isAdxTrendBear
                 };
 
                 resultList.Add(scanResult);
@@ -97,6 +107,50 @@ namespace Screen.Scan
             return result;
         }
 
+
+        public bool? Check_MACD_REVERSE_BEAR(int index, double?[] macdArray, double?[] macdSignalArray,
+    double?[] macdHistArray)
+        {
+            bool? result = null;
+            double Threshold = 0.02;
+
+            try
+            {
+                if (macdArray[index] < Threshold || macdSignalArray[index] < Threshold)
+                {
+                    if (macdHistArray[index + 1] >= 0)
+                    {
+                        if (macdHistArray[index + 2] <= macdHistArray[index + 1] &&
+                            macdHistArray[index + 1] >= macdHistArray[index])
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        if (macdHistArray[index + 3] <= macdHistArray[index + 2] &&
+                            macdHistArray[index + 2] <= macdHistArray[index + 1] &&
+                            macdHistArray[index + 1] >= macdHistArray[index])
+                        {
+                            result = true;
+                        }
+                    }
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_MACD_REVERSE_BEAR" + ex.ToString());
+            }
+            return result;
+        }
+
+
         public bool? Check_MACD_CROSS_BULL(int index, double?[] macdArray, double?[] macdSignalArray,
     double?[] macdHistArray)
         {
@@ -121,6 +175,34 @@ namespace Screen.Scan
             }
             return result;
         }
+
+
+        public bool? Check_MACD_CROSS_BEAR(int index, double?[] macdArray, double?[] macdSignalArray,
+double?[] macdHistArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (macdArray[index] < macdSignalArray[index] && macdArray[index + 1] > macdSignalArray[index + 1])
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
+
 
         public bool? Check_ADX_INTO_BULL(int index, double?[] adxArray, double?[] diPlusArray,
     double?[] diMinusArray)
@@ -152,6 +234,37 @@ namespace Screen.Scan
             return result;
         }
 
+        public bool? Check_ADX_INTO_BEAR(int index, double?[] adxArray, double?[] diPlusArray,
+double?[] diMinusArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (diPlusArray[index] < diMinusArray[index] &&
+                    diPlusArray[index] > adxArray[index] &&
+                    (diPlusArray[index] - adxArray[index]) < 8 &&
+                    adxArray[index] > adxArray[index + 1] &&
+                    Math.Abs(diPlusArray[index].Value - adxArray[index].Value) <
+                    Math.Abs(diPlusArray[index + 1].Value - adxArray[index + 1].Value))
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
+
         public bool? Check_ADX_CROSS_BULL(int index, double?[] adxArray, double?[] diPlusArray,
     double?[] diMinusArray)
         {
@@ -177,6 +290,33 @@ namespace Screen.Scan
             return result;
         }
 
+
+        public bool? Check_ADX_CROSS_BEAR(int index, double?[] adxArray, double?[] diPlusArray,
+double?[] diMinusArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (diPlusArray[index] < diMinusArray[index] &&
+                    diPlusArray[index + 1] > diMinusArray[index + 1])
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
+
         public bool? Check_ADX_TREND_BULL(int index, double?[] adxArray, double?[] diPlusArray,
     double?[] diMinusArray)
         {
@@ -201,6 +341,32 @@ namespace Screen.Scan
             }
             return result;
         }
+
+        public bool? Check_ADX_TREND_BEAR(int index, double?[] adxArray, double?[] diPlusArray,
+double?[] diMinusArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (diPlusArray[index] < diMinusArray[index] &&
+                    adxArray[index] > diPlusArray[index])
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_ADX_INTO_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
 
         public async Task SaveScanResultWeekly(DriveService service, List<ScanResultEntity> scanResultList, string rootID)
         {
