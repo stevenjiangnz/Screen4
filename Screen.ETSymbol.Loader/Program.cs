@@ -35,7 +35,7 @@ namespace Screen.ETSymbol.Loader
         })
         .ConfigureServices((context, services) =>
         {
-            services.Configure<MySettings>(context.Configuration.GetSection("MySettings"));
+            services.Configure<AppSettings>(context.Configuration);
             services.AddSingleton<ETInstrumentManager>();
             // Other service configurations...
         });
