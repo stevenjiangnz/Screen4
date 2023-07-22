@@ -390,9 +390,112 @@ namespace Screen.Function
             }
             return new BadRequestResult();
         }
+
+        #region etoro function
+        [FunctionName("etsymbolrefresh")]
+        public static async Task<IActionResult> ETSymbolRefresh(
+[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                HttpRequest req,
+        Microsoft.Extensions.Logging.ILogger log)
+        {
+            try
+            {
+                log.LogInformation("in ETSymbolRefresh");
+
+                string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                string asxFileName = Environment.GetEnvironmentVariable("ASX_COMPANY_LIST_FILE_NAME");
+
+                ETSymbolManager etManager = new ETSymbolManager(log);
+
+                string market = "etf";
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                }
+
+                await etManager.ETRetrieveInstruments(market);
+
+                return new BadRequestObjectResult("Reach to the end of ETSymbolRefresh");
+
+                //ScreenProcessManager screenProcessManager = new ScreenProcessManager(log, yahooUrlTemplate);
+                //    var service = GetDriveServic();
+
+                //    string interval = "d"; // d for daily or w for weekly
+
+                //    // top -1 means return all, otherwise take the number defined in top
+                //    int top = 300;
+                //    string topString = string.Empty;
+
+                //    var queryDict = req.GetQueryParameterDictionary();
+
+                //    if (queryDict != null)
+                //    {
+                //        try
+                //        {
+                //            if (queryDict.ContainsKey("top"))
+                //            {
+                //                topString = queryDict["top"];
+
+                //                if (!string.IsNullOrEmpty(topString))
+                //                {
+                //                    top = int.Parse(topString);
+                //                }
+                //            }
+
+                //            if (queryDict.ContainsKey("interval"))
+                //            {
+                //                interval = queryDict["interval"].ToString().ToLower();
+
+                //                if (interval != "d" && interval != "w")
+                //                {
+                //                    throw new ArgumentException("interval can be either 'd' or 'w'");
+                //                }
+                //            }
+
+                //            ScreenProcessManager processManager = new ScreenProcessManager(log, yahooUrlTemplate);
+
+                //            if (interval == "w")
+                //            {
+                //                var scanResult = await processManager.ProcessWeeklyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
+                //                return new OkObjectResult(scanResult);
+                //            }
+                //            else if (interval == "d")
+                //            {
+                //                var scanResult = await processManager.ProcessDailyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
+
+                //                return new OkObjectResult(scanResult);
+                //            }
+
+                //        }
+                //        catch (Exception ex)
+                //        {
+                //            throw new ArgumentException($"Error parse input parameter {topString}", ex);
+                //        }
+                //    }
+
+                //    return new OkObjectResult("Process error, unknown inputs.");
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        #endregion
+
         #region support functions
-
-
         [FunctionName("process")]
         public static async Task<IActionResult> GoogleProcess(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
