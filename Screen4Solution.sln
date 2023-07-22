@@ -50,8 +50,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{12
 		.github\workflows\main_screen4processfunctionmain.yml = .github\workflows\main_screen4processfunctionmain.yml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Screen.ETSymbol.Loader", "Screen.ETSymbol.Loader\Screen.ETSymbol.Loader.csproj", "{4380C3D3-D2B7-4A29-815C-449F11AB2E06}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "etoro", "etoro", "{BA50B499-9B4C-4F8E-B781-36644D4204EF}"
 	ProjectSection(SolutionItems) = preProject
 		etoro\etoro_instruments_loader.py = etoro\etoro_instruments_loader.py
@@ -212,18 +210,6 @@ Global
 		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x64.Build.0 = Release|Any CPU
 		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x86.ActiveCfg = Release|Any CPU
 		{C59E3D4D-3DD4-4423-A2C3-1FA08705B119}.Release|x86.Build.0 = Release|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Debug|x64.Build.0 = Debug|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Debug|x86.Build.0 = Debug|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Release|x64.ActiveCfg = Release|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Release|x64.Build.0 = Release|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Release|x86.ActiveCfg = Release|Any CPU
-		{4380C3D3-D2B7-4A29-815C-449F11AB2E06}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
