@@ -50,20 +50,38 @@ namespace Screen.ETSymbol.Loader
                 // Wait for the page to load (you can use more sophisticated waits if needed)
                 Thread.Sleep(2000);
 
-                int i =0;
-                
-                var elements = driver.FindElements(By.ClassName("card-avatar-wrap"));
+                bool hasNextPage = true;
+                int i = 0;
 
-                foreach (var element in elements)
+                while (hasNextPage)
                 {
-                    var symbolElement = element.FindElement(By.ClassName("symbol"));
-                    var nameElement = element.FindElement(By.ClassName("name"));
-                    Console.WriteLine("Symbol: " + symbolElement.Text);
-                    Console.WriteLine("Name: " + nameElement.Text);
-                    i++;
-                }
+                    var elements = driver.FindElements(By.ClassName("card-avatar-wrap"));
 
-                Console.WriteLine($"found items {i}");
+                    foreach (var element in elements)
+                    {
+                        var symbolElement = element.FindElement(By.ClassName("symbol"));
+                        var nameElement = element.FindElement(By.ClassName("name"));
+                        Console.WriteLine("Symbol: " + symbolElement.Text);
+                        Console.WriteLine("Name: " + nameElement.Text);
+                        i++;
+                    }
+
+                    Console.WriteLine($"found items {i}");
+
+                    try
+                    {
+                        // Click the "Next" button to go to the next page
+                        driver.FindElement(By.CssSelector("[automation-id='discover-market-next-button']")).Click();
+
+                        // Wait for the next page to load
+                        Thread.Sleep(2000);
+                    }
+                    catch (NoSuchElementException)
+                    {
+                        // If the "Next" button is not found, we've reached the end of the pages
+                        hasNextPage = false;
+                    }
+                }
 
             }
             catch (Exception ex)
@@ -76,5 +94,6 @@ namespace Screen.ETSymbol.Loader
                 driver.Quit();
             }
         }
+
     }
 }
