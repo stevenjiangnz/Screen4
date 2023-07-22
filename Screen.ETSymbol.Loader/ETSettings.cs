@@ -17,10 +17,16 @@ namespace Screen.ETSymbol.Loader
         public string GoogleServiceAccountKey { get; set; }
         public string GoogleRootId { get; set; }
         public ETFSettings ETFSettings { get; set; }
+        public ASXSettings ASXSettings { get; set; }
 
     }
 
     public class ETFSettings
+    {
+        public string Suffix { get; set; }
+    }
+
+    public class ASXSettings
     {
         public string Suffix { get; set; }
     }
