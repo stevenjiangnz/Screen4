@@ -14,7 +14,10 @@ namespace Screen.ETSymbol.Loader
     public class ETSettings
     {
         public string BaseUrl { get; set; }
+        public string GoogleServiceAccountKey { get; set; }
+        public string GoogleRootId { get; set; }
         public ETFSettings ETFSettings { get; set; }
+
     }
 
     public class ETFSettings
