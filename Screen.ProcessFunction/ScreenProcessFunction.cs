@@ -21,6 +21,7 @@ using Google.Apis.Services;
 using System.Text;
 using Screen.Notification;
 using Screen.Access;
+using Screen.ProcessFunction.etoro;
 
 namespace Screen.Function
 {
@@ -39,8 +40,8 @@ namespace Screen.Function
                 new OkObjectResult($"Status ok. {testValue}" + DateTime.Now));
         }
 
-        [FunctionName("notification")]
-        public async static Task<IActionResult> Notification(
+        [FunctionName("test_notification")]
+        public async static Task<IActionResult> TestNotification(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
             HttpRequest req,
             Microsoft.Extensions.Logging.ILogger log)
@@ -59,15 +60,15 @@ namespace Screen.Function
         }
 
 
-        public static DriveService GetDriveServic()
+        private static DriveService GetDriveServic()
         {
             string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
 
             return GoogleDriveManager.GetDriveServic(serviceAccountKeyJson);
         }
 
-        [FunctionName("symbol")]
-        public static async Task<IActionResult> GoogleSymbol(
+        [FunctionName("test_symbol")]
+        public static async Task<IActionResult> TestGoogleSymbol(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
                     HttpRequest req,
             Microsoft.Extensions.Logging.ILogger log)
@@ -150,8 +151,8 @@ namespace Screen.Function
         }
 
 
-        [FunctionName("ticker")]
-        public static async Task<IActionResult> Ticker(
+        [FunctionName("test_ticker")]
+        public static async Task<IActionResult> TestTicker(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
             HttpRequest req,
             Microsoft.Extensions.Logging.ILogger log)
@@ -247,8 +248,8 @@ namespace Screen.Function
         }
 
 
-        [FunctionName("indicator")]
-        public static async Task<IActionResult> Indicator(
+        [FunctionName("test_indicator")]
+        public static async Task<IActionResult> TestIndicator(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             Microsoft.Extensions.Logging.ILogger log)
@@ -294,8 +295,8 @@ namespace Screen.Function
             return new BadRequestObjectResult("Error in get Indictors. Should not see this...");
         }
 
-        [FunctionName("scan")]
-        public static async Task<IActionResult> Scan(
+        [FunctionName("test_scan")]
+        public static async Task<IActionResult> TestScan(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             Microsoft.Extensions.Logging.ILogger log)
@@ -336,8 +337,8 @@ namespace Screen.Function
         }
 
 
-        [FunctionName("store")]
-        public static async Task<IActionResult> Store(
+        [FunctionName("test_store")]
+        public static async Task<IActionResult> TestStore(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             Microsoft.Extensions.Logging.ILogger log)
@@ -381,8 +382,59 @@ namespace Screen.Function
         }
 
         #region etoro function
-        [FunctionName("etsymbolrefresh")]
-        public static async Task<IActionResult> ETSymbolRefresh(
+        [FunctionName("etprocess")]
+        public static async Task<IActionResult> ETProcess(
+[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                HttpRequest req,
+Microsoft.Extensions.Logging.ILogger log)
+        {
+            try
+            {
+                log.LogInformation("in ETProcess");
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string etListFileName = Environment.GetEnvironmentVariable("ET_MARKET_LIST_FILE_NAME");
+
+                ETSymbolManager etManager = new ETSymbolManager(log);
+
+                string market = string.Empty;
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    } else
+                    {
+                        return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
+                    }
+                }
+
+                ETProcessManager eTProcessManager = new ETProcessManager(log, yahooUrlTemplate);
+
+                await eTProcessManager.ProcessEtMarket(market);
+
+                return new OkObjectResult($"finished process market {market}");
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+
+        [FunctionName("test_etsymbollist")]
+        public static async Task<IActionResult> TestETSymbolList(
 [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
                 HttpRequest req,
         Microsoft.Extensions.Logging.ILogger log)
@@ -391,8 +443,9 @@ namespace Screen.Function
             {
                 log.LogInformation("in ETSymbolRefresh");
 
-                string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-                string asxFileName = Environment.GetEnvironmentVariable("ASX_COMPANY_LIST_FILE_NAME");
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string etListFileName = Environment.GetEnvironmentVariable("ET_MARKET_LIST_FILE_NAME");
 
                 ETSymbolManager etManager = new ETSymbolManager(log);
 
@@ -408,67 +461,9 @@ namespace Screen.Function
                     }
                 }
 
-                //await etManager.ETRetrieveInstruments(market);
+                var symbolList = etManager.GetEtSymbolFullList(service, rootId, etListFileName);
 
-                return new BadRequestObjectResult("Reach to the end of ETSymbolRefresh");
-
-                //ScreenProcessManager screenProcessManager = new ScreenProcessManager(log, yahooUrlTemplate);
-                //    var service = GetDriveServic();
-
-                //    string interval = "d"; // d for daily or w for weekly
-
-                //    // top -1 means return all, otherwise take the number defined in top
-                //    int top = 300;
-                //    string topString = string.Empty;
-
-                //    var queryDict = req.GetQueryParameterDictionary();
-
-                //    if (queryDict != null)
-                //    {
-                //        try
-                //        {
-                //            if (queryDict.ContainsKey("top"))
-                //            {
-                //                topString = queryDict["top"];
-
-                //                if (!string.IsNullOrEmpty(topString))
-                //                {
-                //                    top = int.Parse(topString);
-                //                }
-                //            }
-
-                //            if (queryDict.ContainsKey("interval"))
-                //            {
-                //                interval = queryDict["interval"].ToString().ToLower();
-
-                //                if (interval != "d" && interval != "w")
-                //                {
-                //                    throw new ArgumentException("interval can be either 'd' or 'w'");
-                //                }
-                //            }
-
-                //            ScreenProcessManager processManager = new ScreenProcessManager(log, yahooUrlTemplate);
-
-                //            if (interval == "w")
-                //            {
-                //                var scanResult = await processManager.ProcessWeeklyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
-                //                return new OkObjectResult(scanResult);
-                //            }
-                //            else if (interval == "d")
-                //            {
-                //                var scanResult = await processManager.ProcessDailyBull(service, parentFolderId, asxFileName, top, yahooUrlTemplate);
-
-                //                return new OkObjectResult(scanResult);
-                //            }
-
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            throw new ArgumentException($"Error parse input parameter {topString}", ex);
-                //        }
-                //    }
-
-                //    return new OkObjectResult("Process error, unknown inputs.");
+                return new OkObjectResult(symbolList);
             }
             catch (ArgumentException ex)
             {

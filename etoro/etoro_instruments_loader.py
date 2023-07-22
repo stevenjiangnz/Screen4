@@ -71,4 +71,4 @@ for d in data:
 df = pd.DataFrame(inst)
 
 # Save DataFrame to a CSV file
-df.to_csv('etoro_data.csv', index=False)
+df.to_csv('etoro_list.csv', index=False)
