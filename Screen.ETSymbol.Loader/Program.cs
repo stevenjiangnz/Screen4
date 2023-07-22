@@ -12,14 +12,17 @@ namespace Screen.ETSymbol.Loader
 
              Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File("logs\\Screen.ETSymbol.Loader.log", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs\\Screen.ETSymbol.Loader.log", 
+                    rollingInterval: RollingInterval.Day,
+                    buffered: false,
+                    flushToDiskInterval: TimeSpan.FromMilliseconds(500))
                 .CreateLogger();
 
             var host = CreateHostBuilder(args).Build();
 
             var dataManager = host.Services.GetService<ETInstrumentManager>();
 
-            await dataManager.GetInstruments("");
+            await dataManager.GetInstruments();
 
             // Close and flush the log
             Log.CloseAndFlush();
