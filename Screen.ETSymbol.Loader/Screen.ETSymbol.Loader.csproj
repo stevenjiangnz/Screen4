@@ -30,4 +30,9 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Screen.Entity\Screen.Entity.csproj" />
+    <ProjectReference Include="..\Screen.Utils\Screen.Utils.csproj" />
+  </ItemGroup>
+
 </Project>

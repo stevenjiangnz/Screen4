@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 using HtmlAgilityPack;
+using Screen.Entity;
 
 namespace Screen.ETSymbol.Loader
 {
@@ -24,8 +25,10 @@ namespace Screen.ETSymbol.Loader
                 this._logger.LogInformation("example instruments" + this._appSettings.ToString());
                 var baseUrl = this._appSettings.ETSettings.BaseUrl;
 
-                await this.GetMarketInstuments("etf",
+                var symbolList =  await this.GetMarketInstuments("etf",
                     baseUrl + this._appSettings.ETSettings.ETFSettings.Suffix);
+
+
 
             } catch (Exception ex)
             {
@@ -36,9 +39,11 @@ namespace Screen.ETSymbol.Loader
         }
 
 
-        public async Task GetMarketInstuments(string market, string marketUrl)
+        public async Task<List<ETSymbolEntity>> GetMarketInstuments(string market, string marketUrl)
         {
             this._logger.LogInformation($"in GetMarketInstuments {market}, {marketUrl}");
+
+            List<ETSymbolEntity> symbolList = new List<ETSymbolEntity>();
 
             IWebDriver driver = new ChromeDriver();
 
@@ -51,7 +56,6 @@ namespace Screen.ETSymbol.Loader
                 Thread.Sleep(2000);
 
                 bool hasNextPage = true;
-                int i = 0;
 
                 while (hasNextPage)
                 {
@@ -61,25 +65,24 @@ namespace Screen.ETSymbol.Loader
                     {
                         var symbolElement = element.FindElement(By.ClassName("symbol"));
                         var nameElement = element.FindElement(By.ClassName("name"));
-                        Console.WriteLine("Symbol: " + symbolElement.Text);
-                        Console.WriteLine("Name: " + nameElement.Text);
-                        i++;
+
+                        symbolList.Add(new ETSymbolEntity(market, symbolElement.Text, nameElement.Text));
                     }
 
-                    Console.WriteLine($"found items {i}");
+                    var nextPageButton = driver.FindElement(By.CssSelector("[automation-id='discover-market-next-button']"));
 
-                    try
+                    if (nextPageButton.GetAttribute("class").Contains("disabled"))
+                    {
+                        // If the "Next" button is disabled, we've reached the end of the pages
+                        hasNextPage = false;
+                    }
+                    else
                     {
                         // Click the "Next" button to go to the next page
-                        driver.FindElement(By.CssSelector("[automation-id='discover-market-next-button']")).Click();
+                        nextPageButton.Click();
 
                         // Wait for the next page to load
                         Thread.Sleep(2000);
-                    }
-                    catch (NoSuchElementException)
-                    {
-                        // If the "Next" button is not found, we've reached the end of the pages
-                        hasNextPage = false;
                     }
                 }
 
@@ -93,6 +96,8 @@ namespace Screen.ETSymbol.Loader
                 // Quit the driver and close the browser
                 driver.Quit();
             }
+
+            return symbolList;
         }
 
     }

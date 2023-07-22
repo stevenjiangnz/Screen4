@@ -1,4 +1,6 @@
-﻿using Google.Apis.Drive.v3;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,25 @@ namespace Screen.Access
         {
             this._log = log;
         }
+
+        public static DriveService GetDriveServic(string serviceAccountKeyJson)
+        {
+            GoogleCredential credential;
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(serviceAccountKeyJson)))
+            {
+                credential = GoogleCredential.FromStream(stream).CreateScoped(DriveService.Scope.Drive);
+            }
+
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential
+            });
+
+            return service;
+        }
+
+
         public static string FindOrCreateFolder(DriveService service, string parentFolderId, string folderName)
         {
             // List all folders

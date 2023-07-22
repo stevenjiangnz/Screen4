@@ -20,6 +20,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using System.Text;
 using Screen.Notification;
+using Screen.Access;
 
 namespace Screen.Function
 {
@@ -62,19 +63,7 @@ namespace Screen.Function
         {
             string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
 
-            GoogleCredential credential;
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(serviceAccountKeyJson)))
-            {
-                credential = GoogleCredential.FromStream(stream).CreateScoped(DriveService.Scope.Drive);
-            }
-
-            var service = new DriveService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential
-            });
-
-            return service;
+            return GoogleDriveManager.GetDriveServic(serviceAccountKeyJson);
         }
 
         [FunctionName("symbol")]
