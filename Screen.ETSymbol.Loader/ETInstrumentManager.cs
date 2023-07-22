@@ -9,7 +9,7 @@ using Google.Apis.Drive.v3;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-
+using OpenQA.Selenium.Firefox;
 
 namespace Screen.ETSymbol.Loader
 {
@@ -88,8 +88,8 @@ namespace Screen.ETSymbol.Loader
 
             List<ETSymbolEntity> symbolList = new List<ETSymbolEntity>();
 
-            IWebDriver driver = new ChromeDriver();
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            IWebDriver driver = new FirefoxDriver();  // change this line
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
 
             try
             {
