@@ -4,6 +4,8 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 using HtmlAgilityPack;
 using Screen.Entity;
+using Screen.Access;
+using Screen.Utils;
 
 namespace Screen.ETSymbol.Loader
 {
@@ -25,12 +27,19 @@ namespace Screen.ETSymbol.Loader
                 this._logger.LogInformation("example instruments" + this._appSettings.ToString());
                 var baseUrl = this._appSettings.ETSettings.BaseUrl;
 
+
+                var driveService = GoogleDriveManager.GetDriveServic(this._appSettings.ETSettings.GoogleServiceAccountKey);
+
+                var etoroFolder = GoogleDriveManager.FindOrCreateFolder(driveService, this._appSettings.ETSettings.GoogleRootId, "etoro");
+                var instrumentFolder = GoogleDriveManager.FindOrCreateFolder(driveService, etoroFolder, "instruments");
+
+                
                 var symbolList =  await this.GetMarketInstuments("etf",
                     baseUrl + this._appSettings.ETSettings.ETFSettings.Suffix);
 
-
-
-            } catch (Exception ex)
+                GoogleDriveManager.UploadTextStringToDriveFolder(driveService, instrumentFolder, symbolList.ToJsonString(true), "etoro_etf_list.json");
+            }
+            catch (Exception ex)
             {
                 this._logger.LogError(ex, "Error in GetInstruments");
             }

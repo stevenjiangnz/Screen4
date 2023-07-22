@@ -382,7 +382,7 @@ double?[] diMinusArray)
 
                 var fileName = $"weekly_scanresult_{dateScan}.csv";
 
-                GoogleDriveManager.UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
+                GoogleDriveManager.UploadTextStringToDriveFolder(service, folderId, csvString, fileName);
 
                 this._log.LogInformation($"After upload weekly scan result to  {fileName} {folderId}");
             }
@@ -402,7 +402,7 @@ double?[] diMinusArray)
 
                 var fileName = $"daily_scanresult_{direction}_{dateScan}.csv";
 
-                GoogleDriveManager.UploadCsvStringToDriveFolder(service, folderId, csvString, fileName);
+                GoogleDriveManager.UploadTextStringToDriveFolder(service, folderId, csvString, fileName);
 
                 this._log.LogInformation($"After upload daily scan result to  {fileName} {folderId}");
             }

@@ -71,7 +71,7 @@ namespace Screen.Access
             return folder.Id;
         }
 
-        public static void UploadCsvStringToDriveFolder(DriveService service, string folderId, string csvData, string fileName)
+        public static void UploadTextStringToDriveFolder(DriveService service, string folderId, string csvData, string fileName)
         {
             // Search for existing file by name and parent folder
             var query = $"name = '{fileName}' and '{folderId}' in parents";
