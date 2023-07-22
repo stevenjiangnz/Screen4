@@ -40,12 +40,6 @@ namespace Screen.ETSymbol.Loader
         {
             this._logger.LogInformation($"in GetMarketInstuments {market}, {marketUrl}");
 
-            // Specify the path to the ChromeDriver executable
-            var chromeDriverPath = "path/to/chromedriver.exe";
-
-            // Create a new ChromeDriver instance
-            var options = new ChromeOptions();
-            options.AddArgument("--headless"); // Run Chrome in headless mode (without GUI)
             IWebDriver driver = new ChromeDriver();
 
             try
@@ -69,7 +63,7 @@ namespace Screen.ETSymbol.Loader
                     i++;
                 }
 
-                Console.WriteLine($"found items {i + 1}");
+                Console.WriteLine($"found items {i}");
 
             }
             catch (Exception ex)
