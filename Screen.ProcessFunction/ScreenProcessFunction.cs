@@ -408,7 +408,7 @@ namespace Screen.Function
                     }
                 }
 
-                await etManager.ETRetrieveInstruments(market);
+                //await etManager.ETRetrieveInstruments(market);
 
                 return new BadRequestObjectResult("Reach to the end of ETSymbolRefresh");
 

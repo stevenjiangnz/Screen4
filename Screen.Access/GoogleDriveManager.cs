@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
@@ -105,6 +106,55 @@ namespace Screen.Access
             Console.WriteLine($"Uploaded file: {file.Name}, File ID: {file.Id}");
         }
 
+        public static string DownloadTextStringFromDriveFolder(DriveService service, string folderId, string fileName)
+        {
+            // Search for existing file by name and parent folder
+            var query = $"name = '{fileName}' and '{folderId}' in parents";
+            var listRequest = service.Files.List();
+            listRequest.Q = query;
+            var existingFiles = listRequest.Execute().Files;
+
+            // File not found
+            if (existingFiles == null || existingFiles.Count == 0)
+            {
+                Console.WriteLine($"File not found: {fileName}");
+                return null;
+            }
+
+            // Download file
+            var fileId = existingFiles[0].Id;
+            var request = service.Files.Get(fileId);
+            var stream = new MemoryStream();
+            request.MediaDownloader.ProgressChanged +=
+                (IDownloadProgress progress) =>
+                {
+                    switch (progress.Status)
+                    {
+                        case DownloadStatus.Downloading:
+                            {
+                                Console.WriteLine($"Download progress: {progress.BytesDownloaded}");
+                                break;
+                            }
+                        case DownloadStatus.Completed:
+                            {
+                                Console.WriteLine("Download complete.");
+                                break;
+                            }
+                        case DownloadStatus.Failed:
+                            {
+                                Console.WriteLine("Download failed.");
+                                break;
+                            }
+                    }
+                };
+            request.Download(stream);
+
+            // Convert to string and return
+            var byteArray = stream.ToArray();
+            var textData = System.Text.Encoding.UTF8.GetString(byteArray);
+            Console.WriteLine($"Downloaded file: {fileName}, File ID: {fileId}");
+            return textData;
+        }
 
     }
 }
