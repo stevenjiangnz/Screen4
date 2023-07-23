@@ -401,3 +401,4 @@ FodyWeavers.xsd
 **/appsettings.Development.json
 resources/deploy/data/
 Screen.Deploy/terraform/.terraform/providers/registry.terraform.io/hashicorp/azurerm/3.55.0/linux_amd64/terraform-provider-azurerm_v3.55.0_x5
+/Screen.ETSymbol.Loader/appsettings.json

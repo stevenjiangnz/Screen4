@@ -8,8 +8,6 @@ using Screen.Access;
 using Screen.Entity;
 using Screen.Shared;
 using Google.Apis.Drive.v3;
-using Google.Apis.Download;
-using System;
 using CsvHelper.TypeConversion;
 
 namespace Screen.Symbols

@@ -51,7 +51,7 @@ namespace Screen.Test.Scan
             SymbolManager scanManager = new SymbolManager(_settings);
 
             var symbolList = scanManager.LoadFullSymbolList(300);
-            var tickerManager = new YahooTickManager(this._settings);
+            var tickerManager = new YahooTickManager(this._settings, null);
             IndicatorManager indManager = new IndicatorManager(_settings);
 
             foreach (var symbol in symbolList)

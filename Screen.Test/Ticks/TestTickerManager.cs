@@ -24,7 +24,7 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestLoadTickerFromEmail()
         {
-            TickerManager manager = new TickerManager(_settings);
+            TickerManager manager = new TickerManager(_settings, null);
 
             manager.LoadTickerFromEmail();
         }
@@ -36,7 +36,7 @@ namespace Screen.Test.Ticks
 
             var result = symbolManager.LoadFullSymbolList(null);
 
-            TickerManager manager = new TickerManager(_settings);
+            TickerManager manager = new TickerManager(_settings, null);
 
             manager.ProcessTickersFromDownload(result, 5);
         }
@@ -44,7 +44,7 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestGetTickerFileList()
         {
-            TickerManager manager = new TickerManager(_settings);
+            TickerManager manager = new TickerManager(_settings, null);
 
             var result = manager.GetTickerFileList(7000);
 
@@ -53,7 +53,7 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestGetTickerListByCode()
         {
-            TickerManager manager = new TickerManager(_settings);
+            TickerManager manager = new TickerManager(_settings, null);
 
             var result = manager.GetTickerListByCode("CBA");
 

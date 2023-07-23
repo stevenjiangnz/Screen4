@@ -1,4 +1,7 @@
-﻿using Google.Apis.Drive.v3;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Download;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,6 +18,25 @@ namespace Screen.Access
         {
             this._log = log;
         }
+
+        public static DriveService GetDriveServic(string serviceAccountKeyJson)
+        {
+            GoogleCredential credential;
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(serviceAccountKeyJson)))
+            {
+                credential = GoogleCredential.FromStream(stream).CreateScoped(DriveService.Scope.Drive);
+            }
+
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential
+            });
+
+            return service;
+        }
+
+
         public static string FindOrCreateFolder(DriveService service, string parentFolderId, string folderName)
         {
             // List all folders
@@ -50,7 +72,7 @@ namespace Screen.Access
             return folder.Id;
         }
 
-        public static void UploadCsvStringToDriveFolder(DriveService service, string folderId, string csvData, string fileName)
+        public static void UploadTextStringToDriveFolder(DriveService service, string folderId, string csvData, string fileName)
         {
             // Search for existing file by name and parent folder
             var query = $"name = '{fileName}' and '{folderId}' in parents";
@@ -84,6 +106,55 @@ namespace Screen.Access
             Console.WriteLine($"Uploaded file: {file.Name}, File ID: {file.Id}");
         }
 
+        public static string DownloadTextStringFromDriveFolder(DriveService service, string folderId, string fileName)
+        {
+            // Search for existing file by name and parent folder
+            var query = $"name = '{fileName}' and '{folderId}' in parents";
+            var listRequest = service.Files.List();
+            listRequest.Q = query;
+            var existingFiles = listRequest.Execute().Files;
+
+            // File not found
+            if (existingFiles == null || existingFiles.Count == 0)
+            {
+                Console.WriteLine($"File not found: {fileName}");
+                return null;
+            }
+
+            // Download file
+            var fileId = existingFiles[0].Id;
+            var request = service.Files.Get(fileId);
+            var stream = new MemoryStream();
+            request.MediaDownloader.ProgressChanged +=
+                (IDownloadProgress progress) =>
+                {
+                    switch (progress.Status)
+                    {
+                        case DownloadStatus.Downloading:
+                            {
+                                Console.WriteLine($"Download progress: {progress.BytesDownloaded}");
+                                break;
+                            }
+                        case DownloadStatus.Completed:
+                            {
+                                Console.WriteLine("Download complete.");
+                                break;
+                            }
+                        case DownloadStatus.Failed:
+                            {
+                                Console.WriteLine("Download failed.");
+                                break;
+                            }
+                    }
+                };
+            request.Download(stream);
+
+            // Convert to string and return
+            var byteArray = stream.ToArray();
+            var textData = System.Text.Encoding.UTF8.GetString(byteArray);
+            Console.WriteLine($"Downloaded file: {fileName}, File ID: {fileId}");
+            return textData;
+        }
 
     }
 }

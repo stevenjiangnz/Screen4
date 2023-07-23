@@ -26,7 +26,7 @@ namespace Screen.ProcessFunction
             this._tickerManager = new YahooTickManager(new Shared.SharedSettings
             {
                 YahooUrlTemplate = yahooTemplate,
-            });
+            }, log);
 
             this._indicatorManager = new IndicatorManager();
 
@@ -60,24 +60,27 @@ namespace Screen.ProcessFunction
 
                     if (s.ADX_CROSS_BULL.GetValueOrDefault() || s.ADX_INTO_BULL.GetValueOrDefault()
                         || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
-                        || s.MACD_REVERSE_BULL.GetValueOrDefault())
+                        || s.MACD_REVERSE_BULL.GetValueOrDefault() ||
+                        s.ADX_CROSS_BEAR.GetValueOrDefault() || s.ADX_INTO_BEAR.GetValueOrDefault()
+                        || s.ADX_TREND_BEAR.GetValueOrDefault() || s.MACD_CROSS_BEAR.GetValueOrDefault()
+                        || s.MACD_REVERSE_BEAR.GetValueOrDefault())
                     {
                         scanResult.Add(s);
                     }
                 }
             }
 
-            scanResult = scanResult.OrderBy(m=>m.Symbol).ToList();
-
             this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
 
             if (scanResult != null && scanResult.Count > 0)
             {
+                scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
+
                 await _scanManager.SaveScanResultWeekly(service, scanResult, rootId);
 
                 var dateString = scanResult[0].TradingDate.ToString();
 
-                var subject = "Weekly Scan Result - " + dateString;
+                var subject = "Weekly Scan Result - " + dateString + $" ({scanResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
 
                 await this.SendNotificationEmail(subject, body);
@@ -95,13 +98,12 @@ namespace Screen.ProcessFunction
         {
             this._log.LogInformation("in ProcessDailyBull");
 
-            List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
+            List<ScanResultEntity> scanResultbull = new List<ScanResultEntity>();
+            List<ScanResultEntity> scanResultbear = new List<ScanResultEntity>();
 
             SymbolManager symbolManager = new SymbolManager(this._log);
 
             var symbolList = await symbolManager.GetSymbolsFromGoogleStorage(service, rootId, symbolListFileName, top);
-
-            scanResult = scanResult.OrderBy(m => m.Symbol).ToList();
 
             this._log.LogInformation($"After get Symbol, returned {symbolList.Count}");
 
@@ -117,26 +119,50 @@ namespace Screen.ProcessFunction
                         || s.ADX_TREND_BULL.GetValueOrDefault() || s.MACD_CROSS_BULL.GetValueOrDefault()
                         || s.MACD_REVERSE_BULL.GetValueOrDefault())
                     {
-                        scanResult.Add(s);
+                        s.MACD_CROSS_BEAR = null;
+                        s.MACD_REVERSE_BEAR = null;
+                        s.ADX_CROSS_BEAR = null;
+                        s.ADX_INTO_BEAR = null;
+                        s.ADX_TREND_BEAR = null;
+                        scanResultbull.Add(s);
                     }
+
+ 
                 }
             }
 
-            this._log.LogInformation($"After scan indicator, returned {scanResult.Count}");
+            this._log.LogInformation($"After scan indicator, returned {scanResultbull.Count}");
 
-            if (scanResult != null && scanResult.Count > 0)
+            if (scanResultbull != null && scanResultbull.Count > 0)
             {
-                await _scanManager.SaveScanResultDaily(service, scanResult, rootId);
+                scanResultbull = scanResultbull.OrderBy(m => m.Symbol).ToList();
 
-                var dateString = scanResult[0].TradingDate.ToString();
+                await _scanManager.SaveScanResultDaily(service, scanResultbull, rootId, "bull");
 
-                var subject = "Daily Scan Result - " + dateString;
-                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResult);
+                var dateString = scanResultbull[0].TradingDate.ToString();
+
+                var subject = "Daily Scan Result (Bull) - " + dateString + $" ({scanResultbull.Count})"; 
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbull);
 
                 await this.SendNotificationEmail(subject, body);
             }
 
-            return scanResult;
+
+            if (scanResultbear != null && scanResultbear.Count > 0)
+            {
+                scanResultbear = scanResultbear.OrderBy(m => m.Symbol).ToList();
+
+                await _scanManager.SaveScanResultDaily(service, scanResultbear, rootId, "bear");
+
+                var dateString = scanResultbear[0].TradingDate.ToString();
+
+                var subject = "Daily Scan Result (Bear) - " + dateString + $" ({scanResultbear.Count})";
+                var body = ScanManager.ConvertToCsv<ScanResultEntity>(scanResultbear);
+
+                await this.SendNotificationEmail(subject, body);
+            }
+
+            return scanResultbull;
         }
 
 
@@ -151,42 +177,9 @@ namespace Screen.ProcessFunction
 
             await notificationManager.SendNotificationEmail(emailSender, emailRecipients, subject, body);   
         }
-
         #endregion
 
         #region Azure unfinished
-        //public async Task<List<ScanResultEntity>> ProcessWeeklyBull(string storageConnStr,
-        //string storageContainer, string symbolListFileName, int top, string yahooUrlTemplate)
-        //{
-        //    List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
-
-        //    try
-        //    {
-        //        SymbolManager symbolManager = new SymbolManager(this._log);
-
-        //        this._log.LogInformation($"About to load symbols, top: {top}");
-        //        var symbolList = await symbolManager.GetSymbolsFromAzureStorage(storageConnStr, storageContainer,
-        //            symbolListFileName, top);
-
-        //        this._log.LogInformation($"Symbol retireved {symbolList.Count}");
-
-        //        // TODO: change it to WaitAll
-        //        foreach (var symbol in symbolList)
-        //        {
-        //            var stockResult = await ProcessIndividualStock(yahooUrlTemplate, symbol.Code, "1wk", 60);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this._log.LogError(ex, "Error in ProcessWeeklyBull");
-        //        throw;
-        //    }
-
-        //    this._log.LogInformation("in process weekly bull");
-
-        //    return scanResult;
-        //}
-
         public async Task<List<ScanResultEntity>> ProcessIndividualStock(string urlTemplate, string symbol,
             string interval, int periodInMonth)
         {

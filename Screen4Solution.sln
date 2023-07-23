@@ -50,6 +50,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{12
 		.github\workflows\main_screen4processfunctionmain.yml = .github\workflows\main_screen4processfunctionmain.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "etoro", "etoro", "{BA50B499-9B4C-4F8E-B781-36644D4204EF}"
+	ProjectSection(SolutionItems) = preProject
+		etoro\etoro_instruments_loader.py = etoro\etoro_instruments_loader.py
+		etoro\etoro_list.csv = etoro\etoro_list.csv
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -211,6 +217,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9179E9AF-EEC4-4D64-B143-CFFF7851723F} = {7551364A-0497-496B-8BA1-168B37005858}
 		{122CB960-E911-4AAE-9E1C-C16DD949DB39} = {7551364A-0497-496B-8BA1-168B37005858}
+		{BA50B499-9B4C-4F8E-B781-36644D4204EF} = {7551364A-0497-496B-8BA1-168B37005858}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B7BE22C8-652C-4AE3-B067-DAD0AA4FB43C}
