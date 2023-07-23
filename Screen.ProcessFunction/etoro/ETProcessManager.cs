@@ -56,6 +56,10 @@ namespace Screen.ProcessFunction.etoro
                     process = new ETFUSMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("etf-us", "1d", verbose);
                     break;
+                case "etf-uk":
+                    process = new ETFUKMarketProcess(_logger, _yahooTemplate);
+                    scanResultEntities = await process.ProcessMarket("etf-uk", "1d", verbose);
+                    break;
                 default:
                     throw new NotImplementedException($"market {market} is not implemented.");
             }
