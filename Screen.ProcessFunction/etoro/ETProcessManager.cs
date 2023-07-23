@@ -7,6 +7,7 @@ using Screen.Notification;
 using Screen.Scan;
 using Screen.Symbols;
 using Screen.Ticks;
+using Screen.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,10 +73,71 @@ namespace Screen.ProcessFunction.etoro
                 case "asx":
                     return await this.ProcessMarketAsx(verbose:verbose);
                     break;
+                case "etf-us":
+                    return await this.ProcessMarketEtfUs(verbose: verbose);
+                    break;
                 default:
                     throw new NotImplementedException($"market {market} is not implemented.");
             }
         }
+
+        public async Task<List<ScanResultEntity>> ProcessMarketEtfUs(string interval = "1d", bool verbose = false)
+        {
+            List<ScanResultEntity> bullResultList = new List<ScanResultEntity>();
+            List<ScanResultEntity> bearResultList = new List<ScanResultEntity>();
+            try
+            {
+                List<ETSymbolEntity> symbolList = this._symbolManager.GetEtSymbolFullList(_driveService, this._googleRootId, this._etListFileName);
+                symbolList = this._symbolManager.GetEtEtfSymbolList(symbolList);
+
+                symbolList = symbolList.Where(s => s.Exchange.ToLower() != "london").ToList();
+
+                this._logger.LogInformation($"after retrieve symbol for etf-us, returned items {symbolList.Count}");
+
+                // process each symbol
+                foreach (ETSymbolEntity symbol in symbolList)
+                {
+                    symbol.Symbol = symbol.Symbol.Replace(".US", "");
+                    var scanResult = await this.ProcessIndividualSymbol(symbol, interval);
+
+                    if (scanResult != null && scanResult.Count > 0)
+                    {
+                        var bullResult = this.IsBullResult(scanResult[0], verbose);
+                        if (bullResult != null)
+                        {
+                            bullResultList.Add(bullResult);
+                        }
+
+                        var bearResult = this.IsBearResult(scanResult[0], verbose);
+                        if (bearResult != null)
+                        {
+                            bearResultList.Add(bearResult);
+                        }
+
+                    }
+                }
+
+                // Send notification scan result
+                await this.SendNotificationScanResult("etf-us", bullResultList, bearResultList);
+
+                // Save to google drive
+                await this.SaveScanResult("etf-us", bullResultList, bearResultList);
+
+                return bullResultList.Concat(bearResultList).ToList();
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Process Asx Error.\n {ex.ToString()}");
+                throw;
+            }
+        }
+
+
+
+
+
+
+
 
         public async Task<List<ScanResultEntity>> ProcessMarketAsx(string interval = "1d", bool verbose = false)
         {
@@ -152,7 +214,7 @@ namespace Screen.ProcessFunction.etoro
 
             if (bullResult != null && bullResult.Count > 0)
             {
-                var subject = $"ETScan_{market}_{bullResult[0].TradingDate}_bull ({bullResult.Count})";
+                var subject = $"ETScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(bullResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
@@ -160,7 +222,7 @@ namespace Screen.ProcessFunction.etoro
 
             if (bearResult != null && bearResult.Count > 0)
             {
-                var subject = $"ETScan_{market}_{bearResult[0].TradingDate}_bear ({bearResult.Count})";
+                var subject = $"ETScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(bearResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);

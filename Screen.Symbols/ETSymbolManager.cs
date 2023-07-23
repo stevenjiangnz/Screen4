@@ -39,6 +39,13 @@ namespace Screen.Symbols
             s.Symbol.ToLower().IndexOf(".asx") > 0).ToList();
         }
 
+        public List<ETSymbolEntity> GetEtEtfSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.InstrumentType.ToLower() == "etf" ).ToList();
+        }
+
+
         public List<ETSymbolEntity> ConvertCSVToList(string csvContent)
         {
             using (var reader = new StringReader(csvContent))
