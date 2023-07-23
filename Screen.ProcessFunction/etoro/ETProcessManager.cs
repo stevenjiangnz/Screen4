@@ -60,6 +60,14 @@ namespace Screen.ProcessFunction.etoro
                     process = new ETFUKMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("etf-uk", "1d", verbose);
                     break;
+                case "hk":
+                    process = new HKMarketProcess(_logger, _yahooTemplate);
+                    scanResultEntities = await process.ProcessMarket("hk", "1d", verbose);
+                    break;
+                case "nasdaq":
+                    process = new NASDAQMarketProcess(_logger, _yahooTemplate);
+                    scanResultEntities = await process.ProcessMarket("nasdaq", "1d", verbose);
+                    break;
                 default:
                     throw new NotImplementedException($"market {market} is not implemented.");
             }

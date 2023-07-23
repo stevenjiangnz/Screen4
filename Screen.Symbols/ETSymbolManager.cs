@@ -45,6 +45,18 @@ namespace Screen.Symbols
             s.InstrumentType.ToLower() == "etf" ).ToList();
         }
 
+        public List<ETSymbolEntity> GetEtHkSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "hongkong").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtNasdaqSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "nasdaq" && 
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
 
         public List<ETSymbolEntity> ConvertCSVToList(string csvContent)
         {
