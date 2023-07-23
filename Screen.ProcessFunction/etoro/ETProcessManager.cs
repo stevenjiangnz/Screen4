@@ -127,16 +127,10 @@ namespace Screen.ProcessFunction.etoro
             }
             catch (Exception ex)
             {
-                this._logger.LogError($"Process Asx Error.\n {ex.ToString()}");
+                this._logger.LogError($"Process etf-us Error.\n {ex.ToString()}");
                 throw;
             }
         }
-
-
-
-
-
-
 
 
         public async Task<List<ScanResultEntity>> ProcessMarketAsx(string interval = "1d", bool verbose = false)
