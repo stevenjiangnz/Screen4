@@ -7,7 +7,6 @@ on:
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './Screen.ProcessFunction' # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x' # set this to the dotnet version to use
-  AZURE_FUNCTIONAPP_SCHEDULER_PATH: './Screen.SchedulerFunction' # set this to the path to your web app project, defaults to the repository root
 
 jobs:
   build-and-deploy:
@@ -38,21 +37,6 @@ jobs:
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E57A4D4EB322432EA6F5D0E98350ACAE }}
 
-      #- name: 'Build for Schedule Function'
-      #  shell: pwsh
-      #  run: |
-      #    pushd './${{ env.AZURE_FUNCTIONAPP_SCHEDULER_PATH }}'
-      #    dotnet build --configuration Release --output ./output
-      #    popd
-
-      #- name: 'Run Azure Functions Action - scheduler function'
-      #  uses: Azure/functions-action@v1
-      #  id: fa
-      #  with:
-      #    app-name: 'screen4schedulerfunction'
-      #    slot-name: 'Production'
-      #    package: '${{ env.AZURE_FUNCTIONAPP_SCHEDULER_PATH }}/output'
-      #    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_37129A4688254AF09D135F8581EA4942 }}
 
   # Publish new image to ACR
   Publish:
@@ -82,13 +66,6 @@ jobs:
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet build --configuration Release --output ./output
           popd
-
-      #- name: 'Build for Schedule Function'
-      #  shell: pwsh
-      #  run: |
-      #    pushd './${{ env.AZURE_FUNCTIONAPP_SCHEDULER_PATH }}'
-      #    dotnet build --configuration Release --output ./output
-      #    popd
 
       # Get the existing and next sematic version
       - name: Get Version
@@ -126,14 +103,5 @@ jobs:
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E57A4D4EB322432EA6F5D0E98350ACAE }}
-
-      #- name: 'Run Azure Functions Action - scheduler function'
-      #  uses: Azure/functions-action@v1
-      #  id: fa
-      #  with:
-      #    app-name: 'screen4schedulerfunction'
-      #    slot-name: 'Production'
-      #    package: '${{ env.AZURE_FUNCTIONAPP_SCHEDULER_PATH }}/output'
-      #    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_37129A4688254AF09D135F8581EA4942 }}
 
   
