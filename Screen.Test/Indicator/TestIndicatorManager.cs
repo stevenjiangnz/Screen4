@@ -27,7 +27,7 @@ namespace Screen.Test.Indicator
         [Fact]
         public void TestProcessIndicators()
         {
-            TickerManager manager = new TickerManager(_settings);
+            TickerManager manager = new TickerManager(_settings, null);
             string code = "CBA";
 
             var result = manager.GetTickerListByCode(code);
@@ -41,7 +41,7 @@ namespace Screen.Test.Indicator
         public async void TestProcessTaooIndicators()
         {
             string symbol = "SUN.AX";
-            var manager = new YahooTickManager(this._settings);
+            var manager = new YahooTickManager(this._settings, null);
             DateTime start = DateTime.Today.AddMonths(-200);
             DateTime end = DateTime.Today;
             var tickString = await manager.DownloadYahooTicks("SUN.AX", start, end);

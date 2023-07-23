@@ -26,7 +26,7 @@ namespace Screen.ProcessFunction
             this._tickerManager = new YahooTickManager(new Shared.SharedSettings
             {
                 YahooUrlTemplate = yahooTemplate,
-            });
+            }, log);
 
             this._indicatorManager = new IndicatorManager();
 
@@ -127,17 +127,7 @@ namespace Screen.ProcessFunction
                         scanResultbull.Add(s);
                     }
 
-                    if (s.ADX_CROSS_BEAR.GetValueOrDefault() || s.ADX_INTO_BEAR.GetValueOrDefault()
-                    || s.ADX_TREND_BEAR.GetValueOrDefault() || s.MACD_CROSS_BEAR.GetValueOrDefault()
-                    || s.MACD_REVERSE_BEAR.GetValueOrDefault())
-                    {
-                        s.MACD_CROSS_BULL = null;
-                        s.MACD_REVERSE_BULL = null;
-                        s.ADX_CROSS_BULL = null;
-                        s.ADX_INTO_BULL = null;
-                        s.ADX_TREND_BULL = null;
-                        scanResultbear.Add(s);
-                    }
+ 
                 }
             }
 
@@ -187,42 +177,9 @@ namespace Screen.ProcessFunction
 
             await notificationManager.SendNotificationEmail(emailSender, emailRecipients, subject, body);   
         }
-
         #endregion
 
         #region Azure unfinished
-        //public async Task<List<ScanResultEntity>> ProcessWeeklyBull(string storageConnStr,
-        //string storageContainer, string symbolListFileName, int top, string yahooUrlTemplate)
-        //{
-        //    List<ScanResultEntity> scanResult = new List<ScanResultEntity>();
-
-        //    try
-        //    {
-        //        SymbolManager symbolManager = new SymbolManager(this._log);
-
-        //        this._log.LogInformation($"About to load symbols, top: {top}");
-        //        var symbolList = await symbolManager.GetSymbolsFromAzureStorage(storageConnStr, storageContainer,
-        //            symbolListFileName, top);
-
-        //        this._log.LogInformation($"Symbol retireved {symbolList.Count}");
-
-        //        // TODO: change it to WaitAll
-        //        foreach (var symbol in symbolList)
-        //        {
-        //            var stockResult = await ProcessIndividualStock(yahooUrlTemplate, symbol.Code, "1wk", 60);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this._log.LogError(ex, "Error in ProcessWeeklyBull");
-        //        throw;
-        //    }
-
-        //    this._log.LogInformation("in process weekly bull");
-
-        //    return scanResult;
-        //}
-
         public async Task<List<ScanResultEntity>> ProcessIndividualStock(string urlTemplate, string symbol,
             string interval, int periodInMonth)
         {

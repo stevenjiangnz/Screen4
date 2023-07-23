@@ -3,20 +3,22 @@ using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using Microsoft.Extensions.Logging;
 using MimeKit;
 using Screen.Entity;
 using Screen.Shared;
 using Screen.Utils;
-using Serilog;
 namespace Screen.Ticks
 {
     public class TickerManager
     {
         private SharedSettings _settings;
+        private readonly ILogger _logger;
 
-        public TickerManager(SharedSettings settings)
+        public TickerManager(SharedSettings settings, ILogger log)
         {
             _settings = settings;
+            this._logger = log;
         }
 
         public void ProcessTickers(IList<SymbolEntity> symbolList, int? loadDays = null)
@@ -28,17 +30,17 @@ namespace Screen.Ticks
 
         public void LoadTickerFromEmail(int? loadDays = null)
         {
-            Log.Debug($"in LoadTickerFromEmail... basepath: {_settings.BasePath}");
+            this._logger.LogDebug($"in LoadTickerFromEmail... basepath: {_settings.BasePath}");
             using (var client = new ImapClient())
             {
                 int downloadFiles = 0;
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true;
                 client.CheckCertificateRevocation = false;
-                Log.Information("About to connect to email...");
+                this._logger.LogInformation("About to connect to email...");
                 client.Connect("imap.gmail.com", 993, true);
                 client.Authenticate(_settings.TickerEmailAccount, _settings.TickerEmailPWD);
 
-                Log.Information("Successfully connected to email.");
+                this._logger.LogInformation("Successfully connected to email.");
 
                 // The Inbox folder is always available on all IMAP servers...
                 var inbox = client.Inbox;
@@ -61,7 +63,7 @@ namespace Screen.Ticks
                     {
                         var message = inbox.GetMessage(uid);
 
-                        Log.Debug($"Uid: {uid.ToString()}, Subject: {message.Subject},  Time: {DateTime.Now.ToLongTimeString()}");
+                        this._logger.LogDebug($"Uid: {uid.ToString()}, Subject: {message.Subject},  Time: {DateTime.Now.ToLongTimeString()}");
 
 
                         if (message.Subject.IndexOf("Daily Historical Data") >= 0)
@@ -84,7 +86,7 @@ namespace Screen.Ticks
 
                                 if (!File.Exists(fileName))
                                 {
-                                    Log.Debug($"About to download file name: {fileName}");
+                                    this._logger.LogDebug($"About to download file name: {fileName}");
                                     using (var stream = File.Create(fileName))
                                     {
                                         if (attachment is MessagePart)
@@ -98,12 +100,12 @@ namespace Screen.Ticks
                                             part.Content.DecodeTo(stream);
                                         }
                                     }
-                                    Log.Information($"Downloaded file name: {fileName}");
+                                    this._logger.LogInformation($"Downloaded file name: {fileName}");
                                     downloadFiles++;
                                 }
                                 else
                                 {
-                                    Log.Warning($"File {fileName} already exists. skipped.");
+                                    this._logger.LogWarning($"File {fileName} already exists. skipped.");
                                 }
 
                             }
@@ -113,19 +115,19 @@ namespace Screen.Ticks
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, $"Error download email, uid: {uid}.");
+                        this._logger.LogError(ex, $"Error download email, uid: {uid}.");
                     }
                 }
 
                 client.Disconnect(true);
 
-                Log.Information($"Downloaded {downloadFiles} files into local");
+                this._logger.LogInformation($"Downloaded {downloadFiles} files into local");
             }
         }
 
         public void ProcessTickersFromDownload(IList<SymbolEntity> symbolList, int? days = null)
         {
-            Log.Debug($"in ProcessTickersFromDownload... basepath: {_settings.BasePath}, symbols : {symbolList.Count}");
+            this._logger.LogDebug($"in ProcessTickersFromDownload... basepath: {_settings.BasePath}, symbols : {symbolList.Count}");
 
             Dictionary<string, IList<TickerEntity>> symbolTickers = new Dictionary<string, IList<TickerEntity>>();
 
@@ -152,11 +154,11 @@ namespace Screen.Ticks
                         }
                     }
 
-                    Log.Information($"Process ticker for file {file}, ticker {tickers.Count}");
+                    this._logger.LogInformation($"Process ticker for file {file}, ticker {tickers.Count}");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, $"Error in loading ticker from file {file}");
+                    this._logger.LogError(ex, $"Error in loading ticker from file {file}");
                 }
             }
 
@@ -166,7 +168,7 @@ namespace Screen.Ticks
                 SaveProcessedTickets(code, symbolTickers[code]);
             }
 
-            Log.Information($"Processed {tickerFileList.Count} files into to individual code file.");
+            this._logger.LogInformation($"Processed {tickerFileList.Count} files into to individual code file.");
         }
 
 
@@ -201,7 +203,7 @@ namespace Screen.Ticks
                     }
 
                     File.WriteAllText(filePath, sb.ToString());
-                    Log.Information($"Add {mergedTickers.Count - existingTickers.Count} tickers into file {filePath}.");
+                    this._logger.LogInformation($"Add {mergedTickers.Count - existingTickers.Count} tickers into file {filePath}.");
                 } else
                 {
                     //Log.Warning($"No new tickers found, nothing to write for code {code}");
@@ -209,7 +211,7 @@ namespace Screen.Ticks
 
             } catch (Exception ex)
             {
-                Log.Error(ex, "Error in SaveProcessedTickets");
+                this._logger.LogError(ex, "Error in SaveProcessedTickets");
             }
         }
 
@@ -234,10 +236,10 @@ namespace Screen.Ticks
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error in GetTickerFileList");
+                this._logger.LogError(ex, "Error in GetTickerFileList");
             }
 
-            Log.Debug($"Load ticker {fileList.Count} files.");
+            this._logger.LogDebug($"Load ticker {fileList.Count} files.");
             return fileList;
         }
 
@@ -258,7 +260,7 @@ namespace Screen.Ticks
 
             } catch (Exception ex)
             {
-                Log.Error(ex, $"Error in GetTickerListByCode {code}");
+                this._logger.LogError(ex, $"Error in GetTickerListByCode {code}");
             }
 
             return tickers;

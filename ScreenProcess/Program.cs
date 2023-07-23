@@ -51,7 +51,7 @@ int RunTickerAndReturnExitCode(TickerOptions opts)
         SymbolManager symbolManager = new SymbolManager(settings);
         var result = symbolManager.LoadFullSymbolList(null);
 
-        TickerManager tickerManager = new TickerManager(settings);
+        TickerManager tickerManager = new TickerManager(settings, null);
 
         if (opts.All)
         {
@@ -81,7 +81,7 @@ int RunProcessAndReturnExitCode(ProcessOptions opts)
         var result = symbolManager.LoadFullSymbolList(null);
         Log.Debug($"Loaded symbol list {result.Count}.");
 
-        TickerManager tickerManager = new TickerManager(settings);
+        TickerManager tickerManager = new TickerManager(settings, null);
 
         if (opts.All)
         {
@@ -101,7 +101,7 @@ int RunProcessAndReturnExitCode(ProcessOptions opts)
 
 int RunIndicatorAndReturnExitCode(IndicatorOptions opts)
 {
-    TickerManager tickerManager = new TickerManager(settings);
+    TickerManager tickerManager = new TickerManager(settings, null);
     SymbolManager symbolManager = new SymbolManager(settings);
     IndicatorManager indicatorManager = new IndicatorManager(settings);
     

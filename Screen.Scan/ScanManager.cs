@@ -408,6 +408,23 @@ double?[] diMinusArray)
             }
         }
 
+        public async Task SaveETScanResult(DriveService service, List<ScanResultEntity> scanResultList, string rootID, string fileName)
+        {
+            this._log.LogInformation($"In SaveETScanResult {fileName}");
+
+            if (scanResultList != null && scanResultList.Count > 0)
+            {
+                var dateScan = scanResultList[0].TradingDate.ToString();
+                var csvString = ConvertToCsv<ScanResultEntity>(scanResultList);
+
+                var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, "etoro");
+                folderId = GoogleDriveManager.FindOrCreateFolder(service, folderId, dateScan.Substring(0,4));
+
+                GoogleDriveManager.UploadTextStringToDriveFolder(service, folderId, csvString, fileName);
+
+                this._log.LogInformation($"After upload daily scan result to  {fileName} {folderId}");
+            }
+        }
 
         public static string ConvertToCsv<T>(IEnumerable<T> data)
         {

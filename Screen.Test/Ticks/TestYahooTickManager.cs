@@ -26,7 +26,7 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestDownloadTicks_Daily()
         {
-            var manager = new YahooTickManager(this._settings);
+            var manager = new YahooTickManager(this._settings, null);
             DateTime start = DateTime.Today.AddMonths(-12);
             DateTime end = DateTime.Today;
             manager.DownloadYahooTicks("SUN.AX", start, end).Wait();
@@ -36,7 +36,7 @@ namespace Screen.Test.Ticks
         [Fact]
         public void TestDownloadTicks_Weekly()
         {
-            var manager = new YahooTickManager(this._settings);
+            var manager = new YahooTickManager(this._settings, null);
             DateTime start = DateTime.Today.AddMonths(-60);
             DateTime end = DateTime.Today;
             manager.DownloadYahooTicks("SUN.AX", start, end, "1wk").Wait();
@@ -67,7 +67,7 @@ namespace Screen.Test.Ticks
         public async Task TestConvertToEntities()
         {
             string symbol = "SUN.AX";
-            var manager = new YahooTickManager(this._settings);
+            var manager = new YahooTickManager(this._settings, null);
             DateTime start = DateTime.Today.AddMonths(-12);
             DateTime end = DateTime.Today;
             var tickString = await manager.DownloadYahooTicks("SUN.AX", start, end);

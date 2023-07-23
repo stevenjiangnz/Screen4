@@ -217,7 +217,7 @@ namespace Screen.Function
                     YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
                     {
                         YahooUrlTemplate = yahooUrlTemplate
-                    });
+                    }, log);
 
                     DateTime end = DateTime.Now.Date;
                     DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
@@ -396,9 +396,8 @@ Microsoft.Extensions.Logging.ILogger log)
                 var service = GetDriveServic();
                 string etListFileName = Environment.GetEnvironmentVariable("ET_MARKET_LIST_FILE_NAME");
 
-                ETSymbolManager etManager = new ETSymbolManager(log);
-
                 string market = string.Empty;
+                bool verbose = false; 
 
                 var queryDict = req.GetQueryParameterDictionary();
 
@@ -411,13 +410,23 @@ Microsoft.Extensions.Logging.ILogger log)
                     {
                         return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
                     }
+
+                    if (queryDict.ContainsKey("verbose"))
+                    {
+                        if (queryDict["verbose"].ToLower() == "true")
+                        {
+                            verbose = true;
+                        }
+                    }
                 }
 
                 ETProcessManager eTProcessManager = new ETProcessManager(log, yahooUrlTemplate);
 
-                await eTProcessManager.ProcessEtMarket(market);
+                eTProcessManager.init();
 
-                return new OkObjectResult($"finished process market {market}");
+                var scanResultList = await eTProcessManager.ProcessEtMarket(market, verbose);
+
+                return new OkObjectResult(scanResultList);
             }
             catch (ArgumentException ex)
             {
