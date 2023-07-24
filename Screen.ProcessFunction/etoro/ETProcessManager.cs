@@ -88,6 +88,10 @@ namespace Screen.ProcessFunction.etoro
                     process = new NYSEMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("nyse", "1d", verbose);
                     break;
+                case "eu":
+                    process = new EUMarketProcess(_logger, _yahooTemplate);
+                    scanResultEntities = await process.ProcessMarket("eu", "1d", verbose);
+                    break;
 
                 default:
                     throw new NotImplementedException($"market {market} is not implemented.");
