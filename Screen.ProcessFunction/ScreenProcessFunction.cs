@@ -422,8 +422,6 @@ Microsoft.Extensions.Logging.ILogger log)
 
                 ETProcessManager eTProcessManager = new ETProcessManager(log, yahooUrlTemplate);
 
-                eTProcessManager.init();
-
                 var scanResultList = await eTProcessManager.ProcessEtMarket(market, verbose);
 
                 return new OkObjectResult(scanResultList);
