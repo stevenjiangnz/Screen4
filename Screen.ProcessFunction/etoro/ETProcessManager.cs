@@ -72,6 +72,10 @@ namespace Screen.ProcessFunction.etoro
                     process = new UKMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("uk", "1d", verbose);
                     break;
+                case "de":
+                    process = new DEMarketProcess(_logger, _yahooTemplate);
+                    scanResultEntities = await process.ProcessMarket("de", "1d", verbose);
+                    break;
 
                 default:
                     throw new NotImplementedException($"market {market} is not implemented.");
