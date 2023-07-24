@@ -58,6 +58,13 @@ namespace Screen.Symbols
             s.InstrumentType.ToLower() == "stocks").ToList();
         }
 
+        public List<ETSymbolEntity> GetEtNyseSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "nyse" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
         public List<ETSymbolEntity> GetEtUkSymbolList(List<ETSymbolEntity> eTSymbolEntities)
         {
             return eTSymbolEntities.Where(s =>
@@ -69,6 +76,20 @@ namespace Screen.Symbols
         {
             return eTSymbolEntities.Where(s =>
             s.Exchange.ToLower() == "frankfurt" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtMiSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "borsaitaliana" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtPaSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "paris" &&
             s.InstrumentType.ToLower() == "stocks").ToList();
         }
 

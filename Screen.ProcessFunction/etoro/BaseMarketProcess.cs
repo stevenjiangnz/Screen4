@@ -216,6 +216,9 @@ namespace Screen.ProcessFunction.etoro
                     }
                 }
 
+                bullResultList = bullResultList.OrderBy(b => b.Symbol).ToList();
+                bearResultList = bearResultList.OrderBy(b => b.Symbol).ToList();
+
                 // Send notification scan result
                 await this.SendNotificationScanResult(market, bullResultList, bearResultList);
 
