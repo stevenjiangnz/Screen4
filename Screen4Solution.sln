@@ -45,8 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Screen.Access", "Screen.Acc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{122CB960-E911-4AAE-9E1C-C16DD949DB39}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\main_screen4processfunctionmain.yml = .github\workflows\main_screen4processfunctionmain.yml
 		.github\workflows\main_screen4processfunctionmain2.yml = .github\workflows\main_screen4processfunctionmain2.yml
+		.github\workflows\main_screen4schedulerfunction.yml.old = .github\workflows\main_screen4schedulerfunction.yml.old
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "etoro", "etoro", "{BA50B499-9B4C-4F8E-B781-36644D4204EF}"
