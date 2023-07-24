@@ -390,7 +390,7 @@ Microsoft.Extensions.Logging.ILogger log)
         {
             try
             {
-                log.LogInformation("in ETProcess");
+                log.LogInformation("In ETProcess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
                 string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 var service = GetDriveServic();
@@ -495,7 +495,7 @@ Microsoft.Extensions.Logging.ILogger log)
         {
             try
             {
-                log.LogInformation("in Google Process");
+                log.LogInformation("In AsxProcess");
 
                 string parentFolderId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 string asxFileName = Environment.GetEnvironmentVariable("ASX_COMPANY_LIST_FILE_NAME");
