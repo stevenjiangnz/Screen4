@@ -58,6 +58,13 @@ namespace Screen.Symbols
             s.InstrumentType.ToLower() == "stocks").ToList();
         }
 
+        public List<ETSymbolEntity> GetEtUkSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "london" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
         public List<ETSymbolEntity> ConvertCSVToList(string csvContent)
         {
             using (var reader = new StringReader(csvContent))
