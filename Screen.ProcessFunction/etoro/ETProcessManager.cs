@@ -68,6 +68,10 @@ namespace Screen.ProcessFunction.etoro
                     process = new NASDAQMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("nasdaq", "1d", verbose);
                     break;
+                case "nyse":
+                    process = new NYSEMarketProcess(_logger, _yahooTemplate);
+                    scanResultEntities = await process.ProcessMarket("nyse", "1d", verbose);
+                    break;
                 case "uk":
                     process = new UKMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("uk", "1d", verbose);
@@ -83,10 +87,6 @@ namespace Screen.ProcessFunction.etoro
                 case "mi":
                     process = new MIMarketProcess(_logger, _yahooTemplate);
                     scanResultEntities = await process.ProcessMarket("mi", "1d", verbose);
-                    break;
-                case "nyse":
-                    process = new NYSEMarketProcess(_logger, _yahooTemplate);
-                    scanResultEntities = await process.ProcessMarket("nyse", "1d", verbose);
                     break;
                 case "eu":
                     process = new EUMarketProcess(_logger, _yahooTemplate);
