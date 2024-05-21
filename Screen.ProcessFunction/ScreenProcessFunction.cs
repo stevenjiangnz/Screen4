@@ -381,6 +381,54 @@ namespace Screen.Function
             return new BadRequestResult();
         }
 
+        #region ETF function
+        [FunctionName("test_asx_etf_symbollist")]
+        public static async Task<IActionResult> TestAsxEtfSymbolList(
+[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                HttpRequest req,
+Microsoft.Extensions.Logging.ILogger log)
+        {
+            try
+            {
+                log.LogInformation("in AsxEtfSymbolRefresh");
+
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string etListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
+
+                AsxEtfSymbolManager asxetfManager = new AsxEtfSymbolManager(log);
+
+                string market = "asxetf";
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                }
+
+                var symbolList = asxetfManager.GetAsxEtfSymbolFullList(service, rootId, etListFileName);
+
+                return new OkObjectResult(symbolList);
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        #endregion
+
+
         #region etoro function
         [FunctionName("etprocess")]
         public static async Task<IActionResult> ETProcess(
