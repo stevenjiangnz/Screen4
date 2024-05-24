@@ -22,6 +22,7 @@ using System.Text;
 using Screen.Notification;
 using Screen.Access;
 using Screen.ProcessFunction.etoro;
+using Screen.ProcessFunction.asxetf;
 
 namespace Screen.Function
 {
@@ -425,6 +426,66 @@ Microsoft.Extensions.Logging.ILogger log)
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
+
+
+        [FunctionName("asxetfprocess")]
+        public static async Task<IActionResult> AsxEtfProcess(
+[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                HttpRequest req,
+Microsoft.Extensions.Logging.ILogger log)
+        {
+            try
+            {
+                log.LogInformation("In AsxEtfProcess");
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string etListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
+
+                string market = string.Empty;
+                bool verbose = false;
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                    else
+                    {
+                        return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
+                    }
+
+                    if (queryDict.ContainsKey("verbose"))
+                    {
+                        if (queryDict["verbose"].ToLower() == "true")
+                        {
+                            verbose = true;
+                        }
+                    }
+                }
+
+                AsxEtfProcess asxEtfProcessManager = new AsxEtfProcess(log, yahooUrlTemplate);
+
+                var scanResultList = await asxEtfProcessManager.ProcessMarket(market, "1d", verbose);
+
+                return new OkObjectResult(scanResultList);
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
 
         #endregion
 
