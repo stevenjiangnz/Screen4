@@ -61,7 +61,7 @@ namespace Screen.Notification
 
                 // Serialize payload to JSON
                 var jsonContent = JsonSerializer.Serialize(payload);
-                _log.LogInformation("Payload to be sent:\n" + jsonContent);
+                //_log.LogInformation("Payload to be sent:\n" + jsonContent);
 
                 using var emailContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await client.PostAsync(url, emailContent);
