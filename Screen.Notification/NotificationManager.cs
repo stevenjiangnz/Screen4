@@ -72,6 +72,8 @@ namespace Screen.Notification
                     "]" +
                 "}";
 
+                _log.LogInformation("Payload to be sent:\n" + payload);
+
                 StringContent emailContent = new StringContent(payload, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await client.PostAsync(url, emailContent);
 
