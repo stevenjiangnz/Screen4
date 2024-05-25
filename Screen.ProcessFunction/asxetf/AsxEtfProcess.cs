@@ -1,4 +1,5 @@
-﻿using Google.Apis.Drive.v3;
+﻿using AutoMapper;
+using Google.Apis.Drive.v3;
 using Microsoft.Extensions.Logging;
 using Screen.Access;
 using Screen.Entity;
@@ -29,6 +30,8 @@ namespace Screen.ProcessFunction.asxetf
         protected string _emailSender;
         protected string _emailRecipients;
         private string EXTRA_EAMIL_RECEIVE = "steven.jiang@shell.com";
+        IMapper _mapper;
+
 
         public AsxEtfProcess(ILogger log, string yahooTemplate)
         {
@@ -68,6 +71,14 @@ namespace Screen.ProcessFunction.asxetf
             {
                 this._emailRecipients +=  ";" + EXTRA_EAMIL_RECEIVE;
             }
+
+
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new MappingProfile());
+            });
+
+            this._mapper = config.CreateMapper();
         }
 
         public async Task<List<ScanResultEntity>> ProcessIndividualSymbol(AsxEtfSymbolEntity symbol,
@@ -98,6 +109,21 @@ namespace Screen.ProcessFunction.asxetf
                 }
 
                 scanResults = (List<ScanResultEntity>)this._scanManager.ProcessScan(indList);
+
+                // add more details into the scanResult
+                if (tickList.Count > 0 && scanResults.Count > 0)
+                {
+                    var lastTick = tickList[tickList.Count - 1];
+                    if (scanResults[0].TradingDate == lastTick.P)
+                    {
+                        scanResults[0].Price = lastTick.C;
+                        scanResults[0].Volume = lastTick.V;
+                        scanResults[0].Exposure = symbol.Exposure;
+                        scanResults[0].Benchmark = symbol.Benchmark;
+                        scanResults[0].InvestmentStyle = symbol.InvestmentStyle;
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -150,14 +176,14 @@ namespace Screen.ProcessFunction.asxetf
             return checkedResult;
         }
 
-        public async Task SendNotificationScanResult(string market, List<ScanResultEntity> bullResult, List<ScanResultEntity> bearResult)
+        public async Task SendNotificationScanResult(string market, List<ScanResultBullEntity> bullResult, List<ScanResultBearEntity> bearResult)
         {
             string filename = string.Empty;
 
             if (bullResult != null && bullResult.Count > 0)
             {
                 var subject = $"AsxEtfScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
-                var body = ScanManager.ConvertToCsv<ScanResultEntity>(bullResult);
+                var body = ScanManager.ConvertToCsv<ScanResultBullEntity>(bullResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
             }
@@ -165,7 +191,7 @@ namespace Screen.ProcessFunction.asxetf
             if (bearResult != null && bearResult.Count > 0)
             {
                 var subject = $"AsxEtfScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
-                var body = ScanManager.ConvertToCsv<ScanResultEntity>(bearResult);
+                var body = ScanManager.ConvertToCsv<ScanResultBearEntity>(bearResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
             }
@@ -228,8 +254,11 @@ namespace Screen.ProcessFunction.asxetf
                 bullResultList = bullResultList.OrderBy(b => b.Symbol).ToList();
                 bearResultList = bearResultList.OrderBy(b => b.Symbol).ToList();
 
+                var bullResultConverted = this._mapper.Map<List<ScanResultBullEntity>>(bullResultList);
+                var bearResultConverted = this._mapper.Map<List<ScanResultBearEntity>>(bearResultList);
+
                 // Send notification scan result
-                await this.SendNotificationScanResult(market, bullResultList, bearResultList);
+                await this.SendNotificationScanResult(market, bullResultConverted, bearResultConverted);
 
                 // Save to google drive
                 await this.SaveScanResult(market, bullResultList, bearResultList);
