@@ -6,6 +6,7 @@ using Screen.Access;
 using Screen.Entity;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -55,6 +56,57 @@ namespace Screen.Symbols
         {
             return eTSymbolEntities.Where(s =>
             s.Exchange.ToLower() == "nasdaq" && 
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtNyseSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "nyse" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtUkSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "london" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtDeSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "frankfurt" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtMiSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "borsaitaliana" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtPaSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            s.Exchange.ToLower() == "paris" &&
+            s.InstrumentType.ToLower() == "stocks").ToList();
+        }
+
+        public List<ETSymbolEntity> GetEtEuSymbolList(List<ETSymbolEntity> eTSymbolEntities)
+        {
+            return eTSymbolEntities.Where(s =>
+            (s.Exchange.ToLower() == "stockholm" ||
+            s.Exchange.ToLower() == "zurich" ||
+            s.Exchange.ToLower() == "bolsademadrid" ||
+            s.Exchange.ToLower() == "amsterdam" ||
+            s.Exchange.ToLower() == "oslo" ||
+            s.Exchange.ToLower() == "copenhagen" ||
+            s.Exchange.ToLower() == "helsinki" ||
+            s.Exchange.ToLower() == "brussels" ||
+            s.Exchange.ToLower() == "lisbon") 
+            &&
             s.InstrumentType.ToLower() == "stocks").ToList();
         }
 

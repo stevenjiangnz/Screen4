@@ -408,7 +408,7 @@ double?[] diMinusArray)
             }
         }
 
-        public async Task SaveETScanResult(DriveService service, List<ScanResultEntity> scanResultList, string rootID, string fileName)
+        public async Task SaveETScanResult(DriveService service, List<ScanResultEntity> scanResultList, string rootID, string fileName, string folderName = "etoro")
         {
             this._log.LogInformation($"In SaveETScanResult {fileName}");
 
@@ -417,7 +417,7 @@ double?[] diMinusArray)
                 var dateScan = scanResultList[0].TradingDate.ToString();
                 var csvString = ConvertToCsv<ScanResultEntity>(scanResultList);
 
-                var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, "etoro");
+                var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, folderName);
                 folderId = GoogleDriveManager.FindOrCreateFolder(service, folderId, dateScan.Substring(0,4));
 
                 GoogleDriveManager.UploadTextStringToDriveFolder(service, folderId, csvString, fileName);

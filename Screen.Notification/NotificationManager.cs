@@ -16,12 +16,35 @@ namespace Screen.Notification
             this._log = logger;
         }
 
+        public bool ShouldNotifyExtraRecipient()
+        {
+            var notify = Environment.GetEnvironmentVariable("NOTIFY_EXTRA_RECIPIENT");
+            return notify != null && ("true".Equals(notify, StringComparison.OrdinalIgnoreCase) ||
+                                      "1".Equals(notify) ||
+                                      "yes".Equals(notify, StringComparison.OrdinalIgnoreCase));
+        }
 
-        public async Task SendNotificationEmail(string sender, string recipients, string subject, string content)
+        public async Task SendNotificationEmail(string sender, string recipients, string subject, string csvContent)
         {
             string sender_email = sender;
-            string recipient_email = recipients;
-            string body = content.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
+            string body = csvContent.Replace("\r\n", "<br/>").Replace("\n", "<br/>"); // HTML formatted body
+
+            // Convert the original CSV content to Base64 for the attachment
+            byte[] csvBytes = Encoding.UTF8.GetBytes(csvContent);
+            string csvBase64 = Convert.ToBase64String(csvBytes);
+
+            // Split the recipients into individual emails
+            var recipientEmails = recipients.Split(';');
+            StringBuilder recipientJson = new StringBuilder();
+            foreach (var email in recipientEmails)
+            {
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    recipientJson.Append($"{{\"Email\": \"{email.Trim()}\"}},");
+                }
+            }
+            if (recipientJson.Length > 0)
+                recipientJson.Length--; // Remove the trailing comma
 
             using (HttpClient client = new HttpClient())
             {
@@ -35,13 +58,16 @@ namespace Screen.Notification
                             "\"From\": {" +
                                 "\"Email\": \"" + sender_email + "\"" +
                             "}," +
-                            "\"To\": [" +
-                                "{" +
-                                    "\"Email\": \"" + recipient_email + "\"" +
-                                "}" +
-                            "]," +
+                            "\"To\": [" + recipientJson + "]," +
                             "\"Subject\": \"" + subject + "\"," +
-                            "\"HTMLPart\": \"" + body + "\"" +
+                            "\"HTMLPart\": \"" + body + "\"," +
+                            "\"Attachments\": [" +
+                                "{" +
+                                    "\"ContentType\": \"text/csv\"," +
+                                    "\"Filename\": \"data.csv\"," +
+                                    "\"Base64Content\": \"" + csvBase64 + "\"" +
+                                "}" +
+                            "]" +
                         "}" +
                     "]" +
                 "}";
@@ -51,18 +77,16 @@ namespace Screen.Notification
 
                 if (response.IsSuccessStatusCode)
                 {
-                    this._log.LogInformation("Email sent successfully!");
+                    _log.LogInformation("Email sent successfully!");
                 }
                 else
                 {
-                    this._log.LogError("Failed to send email. Status code: " + (int)response.StatusCode);
-                    this._log.LogError("Response: " + await response.Content.ReadAsStringAsync());
+                    _log.LogError("Failed to send email. Status code: " + (int)response.StatusCode);
+                    _log.LogError("Response: " + await response.Content.ReadAsStringAsync());
 
                     throw new Exception("Error in sending email...");
                 }
             }
         }
-
-
     }
 }

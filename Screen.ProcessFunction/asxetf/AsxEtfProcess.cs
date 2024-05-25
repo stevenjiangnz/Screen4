@@ -13,23 +13,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Screen.ProcessFunction.etoro
+namespace Screen.ProcessFunction.asxetf
 {
-    public abstract class BaseMarketProcess
+    public class AsxEtfProcess
     {
         protected ILogger _logger;
         protected YahooTickManager _tickerManager;
         protected IndicatorManager _indicatorManager;
-        protected ETSymbolManager _symbolManager;
+        protected AsxEtfSymbolManager _symbolManager;
         protected ScanManager _scanManager;
         protected DriveService _driveService;
         protected NotificationManager _notificationManager;
         protected string _googleRootId;
-        protected string _etListFileName;
+        protected string _asxEtfListFileName;
         protected string _emailSender;
         protected string _emailRecipients;
+        private string EXTRA_EAMIL_RECEIVE = "steven.jiang@shell.com";
 
-        public BaseMarketProcess(ILogger log, string yahooTemplate)
+        public AsxEtfProcess(ILogger log, string yahooTemplate)
         {
             this._logger = log;
 
@@ -39,7 +40,7 @@ namespace Screen.ProcessFunction.etoro
             }, log);
 
             this._indicatorManager = new IndicatorManager();
-            this._symbolManager = new ETSymbolManager(log);
+            this._symbolManager = new AsxEtfSymbolManager(log);
             this._scanManager = new ScanManager(log);
 
             init();
@@ -48,7 +49,7 @@ namespace Screen.ProcessFunction.etoro
         public void init()
         {
             this._googleRootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-            this._etListFileName = Environment.GetEnvironmentVariable("ET_MARKET_LIST_FILE_NAME");
+            this._asxEtfListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
             string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
             this._driveService = GoogleDriveManager.GetDriveServic(serviceAccountKeyJson);
 
@@ -56,12 +57,20 @@ namespace Screen.ProcessFunction.etoro
             var emailApiKey = Environment.GetEnvironmentVariable("EMAIL_API_KEY");
             var emailApiSecret = Environment.GetEnvironmentVariable("EMAIL_API_SECRET");
             this._emailSender = Environment.GetEnvironmentVariable("EMAIL_SENDER");
+
             this._emailRecipients = Environment.GetEnvironmentVariable("EMAIL_RECIPIENTS");
 
             this._notificationManager = new NotificationManager(emailApiKey, emailApiSecret, this._logger);
+
+            bool shouldNotifiyExtra = _notificationManager.ShouldNotifyExtraRecipient();
+
+            if (shouldNotifiyExtra)
+            {
+                this._emailRecipients +=  ";" + EXTRA_EAMIL_RECEIVE;
+            }
         }
 
-        public async Task<List<ScanResultEntity>> ProcessIndividualSymbol(ETSymbolEntity symbol,
+        public async Task<List<ScanResultEntity>> ProcessIndividualSymbol(AsxEtfSymbolEntity symbol,
              string interval)
         {
             List<ScanResultEntity> scanResults = new List<ScanResultEntity>();
@@ -70,22 +79,22 @@ namespace Screen.ProcessFunction.etoro
 
             try
             {
-                var tickList = await this._tickerManager.GetEtTickerList(symbol.Symbol,
+                var tickList = await this._tickerManager.GetEtTickerList(symbol.AsxCode,
                     DateTime.Now.Date.AddMonths(-1 * periodInMonth),
                     DateTime.Now.Date.AddDays(1),
                     interval);
 
-                this._logger.LogDebug($"After retrieving for {symbol.Symbol}, return ticks {tickList.Count}");
+                this._logger.LogDebug($"After retrieving for {symbol.AsxCode}, return ticks {tickList.Count}");
 
-                var indList = this._indicatorManager.CalculateIndicators(symbol.Symbol, tickList);
+                var indList = this._indicatorManager.CalculateIndicators(symbol.AsxCode, tickList);
 
                 if (indList != null)
                 {
-                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.Symbol}, count: {indList.Count}");
+                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.AsxCode}, count: {indList.Count}");
                 }
                 else
                 {
-                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.Symbol}, count: 0, return null from ticker");
+                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.AsxCode}, count: 0, return null from ticker");
                 }
 
                 scanResults = (List<ScanResultEntity>)this._scanManager.ProcessScan(indList);
@@ -147,7 +156,7 @@ namespace Screen.ProcessFunction.etoro
 
             if (bullResult != null && bullResult.Count > 0)
             {
-                var subject = $"ETScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
+                var subject = $"AsxEtfScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(bullResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
@@ -155,7 +164,7 @@ namespace Screen.ProcessFunction.etoro
 
             if (bearResult != null && bearResult.Count > 0)
             {
-                var subject = $"ETScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
+                var subject = $"AsxEtfScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(bearResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
@@ -168,16 +177,16 @@ namespace Screen.ProcessFunction.etoro
 
             if (bullResult != null && bullResult.Count > 0)
             {
-                filename = $"ETScan_{market}_{bullResult[0].TradingDate}_bull.csv";
+                filename = $"AsxEtfScan_{market}_{bullResult[0].TradingDate}_bull.csv";
                 await this._scanManager.SaveETScanResult(this._driveService, bullResult,
-                    _googleRootId, filename);
+                    _googleRootId, filename, "asx-etf");
             }
 
             if (bearResult != null && bearResult.Count > 0)
             {
-                filename = $"ETScan_{market}_{bearResult[0].TradingDate}_bear.csv";
+                filename = $"AsxEtfScan_{market}_{bearResult[0].TradingDate}_bear.csv";
                 await this._scanManager.SaveETScanResult(this._driveService, bearResult,
-                    _googleRootId, filename);
+                    _googleRootId, filename, "asx-etf");
             }
         }
 
@@ -187,16 +196,16 @@ namespace Screen.ProcessFunction.etoro
             List<ScanResultEntity> bearResultList = new List<ScanResultEntity>();
             try
             {
-                List<ETSymbolEntity> symbolList = this._symbolManager.GetEtSymbolFullList(_driveService, this._googleRootId, this._etListFileName);
+                List<AsxEtfSymbolEntity> symbolList = this._symbolManager.GetAsxEtfSymbolFullList(_driveService, this._googleRootId, this._asxEtfListFileName);
 
                 symbolList = FilterSymbols(symbolList);
 
                 this._logger.LogInformation($"after retrieve symbol for {market}, returned items {symbolList.Count}");
 
                 // process each symbol
-                foreach (ETSymbolEntity symbol in symbolList)
+                foreach (AsxEtfSymbolEntity symbol in symbolList)
                 {
-                    symbol.Symbol = PrepareSymbol(symbol.Symbol);
+                    symbol.AsxCode = PrepareSymbol(symbol.AsxCode);
 
                     var scanResult = await this.ProcessIndividualSymbol(symbol, interval);
 
@@ -235,8 +244,14 @@ namespace Screen.ProcessFunction.etoro
         }
 
         // The methods below can be overridden by child classes
-        public abstract List<ETSymbolEntity> FilterSymbols(List<ETSymbolEntity> symbolList);
-        public abstract string PrepareSymbol(string symbol);
+        public List<AsxEtfSymbolEntity> FilterSymbols(List<AsxEtfSymbolEntity> symbolList)
+        {
+            return symbolList.Where(s=>s.IsEnabled).ToList();
+        }
+        public string PrepareSymbol(string symbol)
+        {
+            return symbol+ ".ax";
+        }
 
     }
 }
