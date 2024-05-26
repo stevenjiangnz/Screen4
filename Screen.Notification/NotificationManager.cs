@@ -48,7 +48,7 @@ namespace Screen.Notification
                 HTMLPart = body,
                 Attachments = new[]
                 {
-            new { ContentType = "text/csv", Filename = "data.csv", Base64Content = csvBase64 }
+            new { ContentType = "text/csv", Filename = subject + ".csv", Base64Content = csvBase64 }
         }
             };
 
@@ -61,7 +61,7 @@ namespace Screen.Notification
 
                 // Serialize payload to JSON
                 var jsonContent = JsonSerializer.Serialize(payload);
-                _log.LogInformation("Payload to be sent:\n" + jsonContent);
+                //_log.LogInformation("Payload to be sent:\n" + jsonContent);
 
                 using var emailContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await client.PostAsync(url, emailContent);
