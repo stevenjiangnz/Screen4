@@ -48,7 +48,7 @@ namespace Screen.Notification
                 HTMLPart = body,
                 Attachments = new[]
                 {
-            new { ContentType = "text/csv", Filename = "data.csv", Base64Content = csvBase64 }
+            new { ContentType = "text/csv", Filename = subject + ".csv", Base64Content = csvBase64 }
         }
             };
 
