@@ -4,11 +4,7 @@ using Google.Apis.Drive.v3;
 using Microsoft.Extensions.Logging;
 using Screen.Access;
 using Screen.Entity;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 
 namespace Screen.Symbols
 {
