@@ -100,8 +100,12 @@ namespace Screen.Ticks
 
             string url = this.getYahooTickUrl(_settings.YahooUrlTemplate, symbol, DateHelper.ToTimeStamp(start), DateHelper.ToTimeStamp(end), interval);
             string tickerContent = string.Empty;
+
             using (HttpClient client = new HttpClient())
             {
+                // Add User-Agent header to mimic a modern browser request (Google Chrome)
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36");
+
                 try
                 {
                     HttpResponseMessage response = await client.GetAsync(url);
@@ -116,7 +120,7 @@ namespace Screen.Ticks
                 }
                 catch (Exception ex)
                 {
-                    this._logger.LogError($"Error in GetEtTickerList for {symbol}");
+                    this._logger.LogError($"Error in GetEtTickerList for {symbol}: {ex.Message}");
                 }
             }
 
