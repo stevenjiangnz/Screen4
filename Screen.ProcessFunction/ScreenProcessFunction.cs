@@ -44,14 +44,12 @@ namespace Screen.Function
         }
 
         [FunctionName("asxetfprocess")]
-        public static async Task<IActionResult> AsxEtfProcess(
-[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-                HttpRequest req,
-Microsoft.Extensions.Logging.ILogger log)
+        public static async Task<IActionResult> AsxEtfProcess([HttpTrigger(AuthorizationLevel.Function, 
+            "get", Route = null)] HttpRequest req, ILogger log)
         {
             try
             {
-                log.LogInformation("In AsxEtfProcess");
+                log.LogInformation("In ForexProcess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
                 string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 var service = GetDriveServic();
@@ -102,10 +100,8 @@ Microsoft.Extensions.Logging.ILogger log)
 
 
         [FunctionName("etprocess")]
-        public static async Task<IActionResult> ETProcess(
-[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-                HttpRequest req,
-Microsoft.Extensions.Logging.ILogger log)
+        public static async Task<IActionResult> ETProcess([HttpTrigger(AuthorizationLevel.Function, 
+            "get", Route = null)] HttpRequest req, ILogger log)
         {
             try
             {
@@ -204,8 +200,150 @@ Microsoft.Extensions.Logging.ILogger log)
             }
         }
 
+        [FunctionName("forexprocess")]
+        public static async Task<IActionResult> ForexProcess([HttpTrigger(AuthorizationLevel.Function,
+            "get", Route = null)] HttpRequest req, ILogger log)
+        {
+            try
+            {
+                log.LogInformation("In ForexProcess");
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string etListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
+
+                string market = string.Empty;
+                bool verbose = false;
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                    else
+                    {
+                        return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
+                    }
+
+                    if (queryDict.ContainsKey("verbose"))
+                    {
+                        if (queryDict["verbose"].ToLower() == "true")
+                        {
+                            verbose = true;
+                        }
+                    }
+                }
+
+                AsxEtfProcess asxEtfProcessManager = new AsxEtfProcess(log, yahooUrlTemplate);
+
+                var scanResultList = await asxEtfProcessManager.ProcessMarket(market, "1d", verbose);
+
+                return new OkObjectResult(scanResultList);
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
 
 
+        [FunctionName("test_forex_ticker")]
+        public static async Task<IActionResult> TestForexTicker(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req, ILogger log)
+        {
+            string symbol = string.Empty;
+            string interval = "d"; // d for daily or w for weekly
+            int period = 360; // default for 360
+            try
+            {
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                string output = "json";
+
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("output"))
+                    {
+                        output = queryDict["output"];
+                    }
+
+                    if (queryDict.ContainsKey("symbol"))
+                    {
+                        symbol = queryDict["symbol"];
+                    }
+                    else
+                    {
+                        throw new ArgumentException("symbol is required");
+                    }
+
+                    if (queryDict.ContainsKey("interval"))
+                    {
+                        interval = queryDict["interval"].ToString().ToLower();
+
+                        if (interval != "d" && interval != "w")
+                        {
+                            throw new ArgumentException("interval can be either 'd' or 'w'");
+                        }
+                    }
+
+                    string periodString = string.Empty;
+                    try
+                    {
+                        if (queryDict.ContainsKey("period"))
+                        {
+                            periodString = queryDict["period"];
+
+                            if (!string.IsNullOrEmpty(periodString))
+                            {
+                                period = int.Parse(periodString);
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgumentException($"period much be an integer");
+                    }
+
+                    YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
+                    {
+                        YahooUrlTemplate = yahooUrlTemplate
+                    }, log);
+
+                    DateTime end = DateTime.Now.Date;
+                    DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
+                    string intervalString = interval == "d" ? "1d" : "1wk";
+
+                    var tickList = await tickManager.GetEtTickerList(symbol, start, end, intervalString);
+
+                    return new JsonResult(tickList);
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError(ex, "Error arguments in Ticker");
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Ticker");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+            return new BadRequestObjectResult("Error in get Ticker");
+        }
 
         //[FunctionName("test_notification")]
         //public async static Task<IActionResult> TestNotification(
@@ -650,7 +788,7 @@ Microsoft.Extensions.Logging.ILogger log)
                 var service = GetDriveServic();
 
                 string interval = "d"; // d for daily or w for weekly
-                
+
                 // top -1 means return all, otherwise take the number defined in top
                 int top = 300;
                 string topString = string.Empty;
