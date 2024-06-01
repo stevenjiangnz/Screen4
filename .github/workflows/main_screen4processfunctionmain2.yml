@@ -29,14 +29,14 @@ jobs:
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet build --configuration Release --output ./output
           popd
-      # - name: 'Run Azure Functions Action'
-      #   uses: Azure/functions-action@v1
-      #   id: fa
-      #   with:
-      #     app-name: 'screen4processfunctionmain2'
-      #     slot-name: 'Production'
-      #     package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-      #     publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_89C014B3E0D84E69A2B2C606FD5463B0 }}
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: 'screen4processfunctionmain2'
+          slot-name: 'Production'
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_89C014B3E0D84E69A2B2C606FD5463B0 }}
       
 
   # Publish new image to ACR
