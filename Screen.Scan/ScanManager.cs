@@ -36,6 +36,8 @@ namespace Screen.Scan
                 var isReverseBear = this.Check_MACD_REVERSE_BEAR(i, macdArray, macdSignalArray, macdHistArray);
                 var isCrossBull = this.Check_MACD_CROSS_BULL(i, macdArray, macdSignalArray, macdHistArray);
                 var isCrossBear = this.Check_MACD_CROSS_BEAR(i, macdArray, macdSignalArray, macdHistArray);
+                var isLocationBull = this.Check_MACD_LOCATION_BULL(i, macdArray, macdSignalArray, macdHistArray);
+                var isLocationBear = this.Check_MACD_LOCATION_BEAR(i, macdArray, macdSignalArray, macdHistArray);
                 var isAdxBull = this.Check_ADX_INTO_BULL(i, adxArray, diPlusArray, diMinusArray);
                 var isAdxBear = this.Check_ADX_INTO_BEAR(i, adxArray, diPlusArray, diMinusArray);
                 var isAdxCrossBull = this.Check_ADX_CROSS_BULL(i, adxArray, diPlusArray, diMinusArray);
@@ -51,6 +53,8 @@ namespace Screen.Scan
                     MACD_REVERSE_BEAR = isReverseBear,
                     MACD_CROSS_BULL = isCrossBull,
                     MACD_CROSS_BEAR = isCrossBear,
+                    MACD_LOCATION_BULL = isLocationBull,
+                    MACD_LOCATION_BEAR = isLocationBear,
                     ADX_INTO_BULL = isAdxBull,
                     ADX_INTO_BEAR = isAdxBear,
                     ADX_CROSS_BULL = isAdxCrossBull,
@@ -202,6 +206,55 @@ double?[] macdHistArray)
             return result;
         }
 
+        public bool? Check_MACD_LOCATION_BULL(int index, double?[] macdArray, double?[] macdSignalArray,
+    double?[] macdHistArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (macdArray[index] > 0 || macdSignalArray[index] > 0)
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
+            }
+            return result;
+        }
+
+        public bool? Check_MACD_LOCATION_BEAR(int index, double?[] macdArray, double?[] macdSignalArray,
+    double?[] macdHistArray)
+        {
+            bool? result = null;
+
+            try
+            {
+                if (macdArray[index] < 0 || macdSignalArray[index] < 0)
+                {
+                    result = true;
+                }
+
+                if (!result.HasValue)
+                {
+                    result = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this._log.LogError("Error in process Check_MACD_CROSS_BULL" + ex.ToString());
+            }
+            return result;
+        }
 
 
         public bool? Check_ADX_INTO_BULL(int index, double?[] adxArray, double?[] diPlusArray,
