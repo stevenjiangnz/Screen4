@@ -4,8 +4,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Screen.Entity;
 using Screen.Indicator;
@@ -14,7 +12,10 @@ using Screen.Scan;
 using Screen.Symbols;
 using Screen.Ticks;
 using Screen.Utils;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
@@ -23,14 +24,21 @@ using Screen.Notification;
 using Screen.Access;
 using Screen.ProcessFunction.etoro;
 using Screen.ProcessFunction.asxetf;
+using Screen.ProcessFunction.forex;
 
 namespace Screen.Function
 {
     public class ScreenProcessFunction
     {
+        //private readonly ILogger<HttpTriggerCSharp> _logger;
+
+        //public ScreenProcessFunction(ILogger<HttpTriggerCSharp> logger)
+        //{
+        //    _logger = logger;
+        //}
 
         #region Process Functions
-        [FunctionName("status")]
+        [Function("status")]
         public static Task<IActionResult> Status(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
             HttpRequest req,
@@ -43,7 +51,7 @@ namespace Screen.Function
                 new OkObjectResult($"Status ok. {testValue}" + DateTime.Now));
         }
 
-        [FunctionName("asxetfprocess")]
+        [Function("asxetfprocess")]
         public static async Task<IActionResult> AsxEtfProcess([HttpTrigger(AuthorizationLevel.Function, 
             "get", Route = null)] HttpRequest req, ILogger log)
         {
@@ -99,7 +107,7 @@ namespace Screen.Function
         }
 
 
-        [FunctionName("etprocess")]
+        [Function("etprocess")]
         public static async Task<IActionResult> ETProcess([HttpTrigger(AuthorizationLevel.Function, 
             "get", Route = null)] HttpRequest req, ILogger log)
         {
@@ -158,7 +166,7 @@ namespace Screen.Function
         #endregion
 
         #region Testing functions
-        [FunctionName("test_forex_symbollist")]
+        [Function("test_forex_symbollist")]
         public static async Task<IActionResult> TestForexSymbolList([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
                 HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
@@ -200,7 +208,7 @@ namespace Screen.Function
             }
         }
 
-        [FunctionName("forexprocess")]
+        [Function("forexprocess")]
         public static async Task<IActionResult> ForexProcess([HttpTrigger(AuthorizationLevel.Function,
             "get", Route = null)] HttpRequest req, ILogger log)
         {
@@ -210,7 +218,7 @@ namespace Screen.Function
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
                 string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 var service = GetDriveServic();
-                string etListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
+                string etListFileName = Environment.GetEnvironmentVariable("FOREX_LIST_FILE_NAME");
 
                 string market = string.Empty;
                 bool verbose = false;
@@ -237,9 +245,9 @@ namespace Screen.Function
                     }
                 }
 
-                AsxEtfProcess asxEtfProcessManager = new AsxEtfProcess(log, yahooUrlTemplate);
+                ForexProcess forexProcessManager = new ForexProcess(log, yahooUrlTemplate);
 
-                var scanResultList = await asxEtfProcessManager.ProcessMarket(market, "1d", verbose);
+                var scanResultList = await forexProcessManager.ProcessMarket(market, "1d", verbose);
 
                 return new OkObjectResult(scanResultList);
             }
@@ -256,7 +264,7 @@ namespace Screen.Function
         }
 
 
-        [FunctionName("test_forex_ticker")]
+        [Function("test_forex_ticker")]
         public static async Task<IActionResult> TestForexTicker(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
             HttpRequest req, ILogger log)
@@ -770,7 +778,7 @@ namespace Screen.Function
         #endregion
 
         #region support functions
-        [FunctionName("process")]
+        [Function("process")]
         public static async Task<IActionResult> GoogleProcess(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
                 HttpRequest req,

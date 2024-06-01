@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,13 +25,9 @@ namespace Screen.Utils
                 return default(T);
             }
 
-            IFormatter formatter = new BinaryFormatter();
-            using (var stream = new MemoryStream())
-            {
-                formatter.Serialize(stream, source);
-                stream.Seek(0, SeekOrigin.Begin);
-                return (T)formatter.Deserialize(stream);
-            }
+            // Serialize the object to a JSON string and then deserialize it back to a clone
+            var serialized = JsonConvert.SerializeObject(source);
+            return JsonConvert.DeserializeObject<T>(serialized);
         }
 
         /// <summary>
@@ -56,7 +52,6 @@ namespace Screen.Utils
             {
                 return String.Empty;
             }
-
         }
 
         /// <summary>
@@ -82,18 +77,16 @@ namespace Screen.Utils
         }
 
         /// <summary>
-        /// Timeout the task based on the confgiuration
+        /// Timeout the task based on the configuration
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="task"></param>
-        /// <param name="timeout"></param>
+        /// <param name="milliseconds"></param>
         /// <returns></returns>
         public static async Task<TResult> TimeoutAfter<TResult>(this Task<TResult> task, int milliseconds)
         {
-
             using (var timeoutCancellationTokenSource = new CancellationTokenSource())
             {
-
                 var completedTask = await Task.WhenAny(task, Task.Delay(TimeSpan.FromMilliseconds(milliseconds), timeoutCancellationTokenSource.Token));
                 if (completedTask == task)
                 {
@@ -105,6 +98,12 @@ namespace Screen.Utils
             }
         }
 
+        /// <summary>
+        /// Timeout the task based on the configuration
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
         public static async Task TimeoutAfter(this Task task, int timeout)
         {
             if (task == await Task.WhenAny(task, Task.Delay(timeout)))
@@ -117,6 +116,12 @@ namespace Screen.Utils
             }
         }
 
+        /// <summary>
+        /// Check if the list contains the substring
+        /// </summary>
+        /// <param name="stringList"></param>
+        /// <param name="substring"></param>
+        /// <returns></returns>
         public static bool IsContainSubString(this List<string> stringList, string substring)
         {
             bool IsContain = false;
