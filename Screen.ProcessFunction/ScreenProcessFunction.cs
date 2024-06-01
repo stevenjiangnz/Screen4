@@ -23,6 +23,7 @@ using Screen.Notification;
 using Screen.Access;
 using Screen.ProcessFunction.etoro;
 using Screen.ProcessFunction.asxetf;
+using Screen.ProcessFunction.forex;
 
 namespace Screen.Function
 {
@@ -208,9 +209,6 @@ namespace Screen.Function
             {
                 log.LogInformation("In ForexProcess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
-                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-                var service = GetDriveServic();
-                string etListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
 
                 string market = string.Empty;
                 bool verbose = false;
@@ -237,9 +235,9 @@ namespace Screen.Function
                     }
                 }
 
-                AsxEtfProcess asxEtfProcessManager = new AsxEtfProcess(log, yahooUrlTemplate);
+                ForexProcess forexProcessManager = new ForexProcess(log, yahooUrlTemplate);
 
-                var scanResultList = await asxEtfProcessManager.ProcessMarket(market, "1d", verbose);
+                var scanResultList = await forexProcessManager.ProcessMarket(market, "1d", verbose);
 
                 return new OkObjectResult(scanResultList);
             }

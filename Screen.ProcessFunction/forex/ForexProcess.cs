@@ -21,12 +21,12 @@ namespace Screen.ProcessFunction.forex
         protected ILogger _logger;
         protected YahooTickManager _tickerManager;
         protected IndicatorManager _indicatorManager;
-        protected AsxEtfSymbolManager _symbolManager;
+        protected CurrencyPairSymbolManager _symbolManager;
         protected ScanManager _scanManager;
         protected DriveService _driveService;
         protected NotificationManager _notificationManager;
         protected string _googleRootId;
-        protected string _asxEtfListFileName;
+        protected string _forexListFileName;
         protected string _emailSender;
         protected string _emailRecipients;
         private string EXTRA_EAMIL_RECEIVE = "steven.jiang@shell.com";
@@ -43,7 +43,7 @@ namespace Screen.ProcessFunction.forex
             }, log);
 
             this._indicatorManager = new IndicatorManager();
-            this._symbolManager = new AsxEtfSymbolManager(log);
+            this._symbolManager = new CurrencyPairSymbolManager(log);
             this._scanManager = new ScanManager(log);
 
             init();
@@ -52,7 +52,7 @@ namespace Screen.ProcessFunction.forex
         public void init()
         {
             this._googleRootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-            this._asxEtfListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
+            this._forexListFileName = Environment.GetEnvironmentVariable("FOREX_LIST_FILE_NAME");
             string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
             this._driveService = GoogleDriveManager.GetDriveServic(serviceAccountKeyJson);
 
@@ -81,7 +81,7 @@ namespace Screen.ProcessFunction.forex
             this._mapper = config.CreateMapper();
         }
 
-        public async Task<List<ScanResultEntity>> ProcessIndividualSymbol(AsxEtfSymbolEntity symbol,
+        public async Task<List<ScanResultEntity>> ProcessIndividualSymbol(CurrencyPairEntity symbol,
              string interval)
         {
             List<ScanResultEntity> scanResults = new List<ScanResultEntity>();
@@ -90,22 +90,22 @@ namespace Screen.ProcessFunction.forex
 
             try
             {
-                var tickList = await this._tickerManager.GetEtTickerList(symbol.AsxCode,
+                var tickList = await this._tickerManager.GetEtTickerList(symbol.YahooCode,
                     DateTime.Now.Date.AddMonths(-1 * periodInMonth),
                     DateTime.Now.Date.AddDays(1),
                     interval);
 
-                this._logger.LogDebug($"After retrieving for {symbol.AsxCode}, return ticks {tickList.Count}");
+                this._logger.LogDebug($"After retrieving for {symbol.YahooCode}, return ticks {tickList.Count}");
 
-                var indList = this._indicatorManager.CalculateIndicators(symbol.AsxCode, tickList);
+                var indList = this._indicatorManager.CalculateIndicators(symbol.YahooCode, tickList);
 
                 if (indList != null)
                 {
-                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.AsxCode}, count: {indList.Count}");
+                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.YahooCode}, count: {indList.Count}");
                 }
                 else
                 {
-                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.AsxCode}, count: 0, return null from ticker");
+                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.YahooCode}, count: 0, return null from ticker");
                 }
 
                 scanResults = (List<ScanResultEntity>)this._scanManager.ProcessScan(indList);
@@ -118,9 +118,6 @@ namespace Screen.ProcessFunction.forex
                     {
                         scanResults[0].Price = lastTick.C;
                         scanResults[0].Volume = lastTick.V;
-                        scanResults[0].Exposure = symbol.Exposure;
-                        scanResults[0].Benchmark = symbol.Benchmark;
-                        scanResults[0].InvestmentStyle = symbol.InvestmentStyle;
                     }
                 }
 
@@ -182,7 +179,7 @@ namespace Screen.ProcessFunction.forex
 
             if (bullResult != null && bullResult.Count > 0)
             {
-                var subject = $"AsxEtfScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
+                var subject = $"ForexScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultBullEntity>(bullResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
@@ -190,7 +187,7 @@ namespace Screen.ProcessFunction.forex
 
             if (bearResult != null && bearResult.Count > 0)
             {
-                var subject = $"AsxEtfScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
+                var subject = $"ForexScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultBearEntity>(bearResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
@@ -222,17 +219,15 @@ namespace Screen.ProcessFunction.forex
             List<ScanResultEntity> bearResultList = new List<ScanResultEntity>();
             try
             {
-                List<AsxEtfSymbolEntity> symbolList = this._symbolManager.GetAsxEtfSymbolFullList(_driveService, this._googleRootId, this._asxEtfListFileName);
+                List<CurrencyPairEntity> symbolList = this._symbolManager.GetCurrencyPairsFullList(_driveService, this._googleRootId, this._forexListFileName);
 
                 symbolList = FilterSymbols(symbolList);
 
                 this._logger.LogInformation($"after retrieve symbol for {market}, returned items {symbolList.Count}");
 
                 // process each symbol
-                foreach (AsxEtfSymbolEntity symbol in symbolList)
+                foreach (CurrencyPairEntity symbol in symbolList)
                 {
-                    symbol.AsxCode = PrepareSymbol(symbol.AsxCode);
-
                     var scanResult = await this.ProcessIndividualSymbol(symbol, interval);
 
                     if (scanResult != null && scanResult.Count > 0)
@@ -273,14 +268,14 @@ namespace Screen.ProcessFunction.forex
         }
 
         // The methods below can be overridden by child classes
-        public List<AsxEtfSymbolEntity> FilterSymbols(List<AsxEtfSymbolEntity> symbolList)
+        public List<CurrencyPairEntity> FilterSymbols(List<CurrencyPairEntity> symbolList)
         {
-            return symbolList.Where(s => s.IsEnabled).ToList();
+            return symbolList;
         }
-        public string PrepareSymbol(string symbol)
-        {
-            return symbol + ".ax";
-        }
+        //public string PrepareSymbol(string symbol)
+        //{
+        //    return symbol + ".ax";
+        //}
 
     }
 }
