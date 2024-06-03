@@ -7,19 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Screen.Entity;
-using Screen.Indicator;
 using Screen.ProcessFunction;
-using Screen.Scan;
 using Screen.Symbols;
-using Screen.Ticks;
-using Screen.Utils;
-
-using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
-using Google.Apis.Services;
-using System.Text;
-using Screen.Notification;
 using Screen.Access;
 using Screen.ProcessFunction.etoro;
 using Screen.ProcessFunction.asxetf;
@@ -50,7 +40,7 @@ namespace Screen.Function
         {
             try
             {
-                log.LogInformation("In ForexProcess");
+                log.LogInformation("In AsxEtfProcess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
                 string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
                 var service = GetDriveServic();
@@ -86,108 +76,6 @@ namespace Screen.Function
                 var scanResultList = await asxEtfProcessManager.ProcessMarket(market, "1d", verbose);
 
                 return new OkObjectResult(scanResultList);
-            }
-            catch (ArgumentException ex)
-            {
-                log.LogError("Error arguments in Process. " + ex.ToString());
-                return new BadRequestObjectResult(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "Error in Process. " + ex.ToString());
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-            }
-        }
-
-
-        [FunctionName("etprocess")]
-        public static async Task<IActionResult> ETProcess([HttpTrigger(AuthorizationLevel.Function, 
-            "get", Route = null)] HttpRequest req, ILogger log)
-        {
-            try
-            {
-                log.LogInformation("In ETProcess");
-                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
-                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-                var service = GetDriveServic();
-                string etListFileName = Environment.GetEnvironmentVariable("ET_MARKET_LIST_FILE_NAME");
-
-                string market = string.Empty;
-                bool verbose = false;
-
-                var queryDict = req.GetQueryParameterDictionary();
-
-                if (queryDict != null)
-                {
-                    if (queryDict.ContainsKey("market"))
-                    {
-                        market = queryDict["market"];
-                    }
-                    else
-                    {
-                        return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
-                    }
-
-                    if (queryDict.ContainsKey("verbose"))
-                    {
-                        if (queryDict["verbose"].ToLower() == "true")
-                        {
-                            verbose = true;
-                        }
-                    }
-                }
-
-                ETProcessManager eTProcessManager = new ETProcessManager(log, yahooUrlTemplate);
-
-                var scanResultList = await eTProcessManager.ProcessEtMarket(market, verbose);
-
-                return new OkObjectResult(scanResultList);
-            }
-            catch (ArgumentException ex)
-            {
-                log.LogError("Error arguments in Process. " + ex.ToString());
-                return new BadRequestObjectResult(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "Error in Process. " + ex.ToString());
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-            }
-        }
-
-
-        #endregion
-
-        #region Testing functions
-        [FunctionName("test_forex_symbollist")]
-        public static async Task<IActionResult> TestForexSymbolList([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-                HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
-        {
-            try
-            {
-                log.LogInformation("in TestForexSymbolList");
-
-                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-                var service = GetDriveServic();
-                string forextFileName = Environment.GetEnvironmentVariable("FOREX_LIST_FILE_NAME");
-
-                CurrencyPairSymbolManager asxetfManager = new CurrencyPairSymbolManager(log);
-
-                string market = "forex";
-
-                var queryDict = req.GetQueryParameterDictionary();
-
-                if (queryDict != null)
-                {
-                    if (queryDict.ContainsKey("market"))
-                    {
-                        market = queryDict["market"];
-                    }
-                }
-
-                var symbolList = asxetfManager.GetCurrencyPairsFullList(service, rootId, forextFileName);
-
-                return new OkObjectResult(symbolList);
             }
             catch (ArgumentException ex)
             {
@@ -254,94 +142,241 @@ namespace Screen.Function
         }
 
 
-        [FunctionName("test_forex_ticker")]
-        public static async Task<IActionResult> TestForexTicker(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req, ILogger log)
+
+        [FunctionName("etprocess")]
+        public static async Task<IActionResult> ETProcess([HttpTrigger(AuthorizationLevel.Function, 
+            "get", Route = null)] HttpRequest req, ILogger log)
         {
-            string symbol = string.Empty;
-            string interval = "d"; // d for daily or w for weekly
-            int period = 360; // default for 360
             try
             {
+                log.LogInformation("In ETProcess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string etListFileName = Environment.GetEnvironmentVariable("ET_MARKET_LIST_FILE_NAME");
+
+                string market = string.Empty;
+                bool verbose = false;
 
                 var queryDict = req.GetQueryParameterDictionary();
 
-                string output = "json";
-
-
                 if (queryDict != null)
                 {
-                    if (queryDict.ContainsKey("output"))
+                    if (queryDict.ContainsKey("market"))
                     {
-                        output = queryDict["output"];
-                    }
-
-                    if (queryDict.ContainsKey("symbol"))
-                    {
-                        symbol = queryDict["symbol"];
+                        market = queryDict["market"];
                     }
                     else
                     {
-                        throw new ArgumentException("symbol is required");
+                        return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
                     }
 
-                    if (queryDict.ContainsKey("interval"))
+                    if (queryDict.ContainsKey("verbose"))
                     {
-                        interval = queryDict["interval"].ToString().ToLower();
-
-                        if (interval != "d" && interval != "w")
+                        if (queryDict["verbose"].ToLower() == "true")
                         {
-                            throw new ArgumentException("interval can be either 'd' or 'w'");
+                            verbose = true;
                         }
                     }
-
-                    string periodString = string.Empty;
-                    try
-                    {
-                        if (queryDict.ContainsKey("period"))
-                        {
-                            periodString = queryDict["period"];
-
-                            if (!string.IsNullOrEmpty(periodString))
-                            {
-                                period = int.Parse(periodString);
-                            }
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgumentException($"period much be an integer");
-                    }
-
-                    YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
-                    {
-                        YahooUrlTemplate = yahooUrlTemplate
-                    }, log);
-
-                    DateTime end = DateTime.Now.Date;
-                    DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
-                    string intervalString = interval == "d" ? "1d" : "1wk";
-
-                    var tickList = await tickManager.GetEtTickerList(symbol, start, end, intervalString);
-
-                    return new JsonResult(tickList);
                 }
+
+                ETProcessManager eTProcessManager = new ETProcessManager(log, yahooUrlTemplate);
+
+                var scanResultList = await eTProcessManager.ProcessEtMarket(market, verbose);
+
+                return new OkObjectResult(scanResultList);
             }
             catch (ArgumentException ex)
             {
-                log.LogError(ex, "Error arguments in Ticker");
+                log.LogError("Error arguments in Process. " + ex.ToString());
                 return new BadRequestObjectResult(ex.Message);
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Error in Ticker");
+                log.LogError(ex, "Error in Process. " + ex.ToString());
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
-            return new BadRequestObjectResult("Error in get Ticker");
         }
+
+
+        #endregion
+
+        #region Testing functions
+        [FunctionName("test_ibkr_etf_symbollist")]
+        public static async Task<IActionResult> TestIbkrEtfSymbolList([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
+        {
+            try
+            {
+                log.LogInformation("in TestIbkrEtfSymbolList");
+
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string forextFileName = Environment.GetEnvironmentVariable("US_ETF_LIST_FILE_NAME");
+
+                IbkrSymbolManager ibkrSymbolManager = new IbkrSymbolManager(log);
+
+                string market = "us-etf";
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                }
+
+                var symbolList = ibkrSymbolManager.GetSymbolList(service, rootId, forextFileName);
+
+                return new OkObjectResult(symbolList);
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+
+        [FunctionName("test_us_etf_symbollist")]
+        public static async Task<IActionResult> TestUsEtfSymbolList([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+                HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
+        {
+            try
+            {
+                log.LogInformation("in TestUsEtfSymbolList");
+
+                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+                var service = GetDriveServic();
+                string forextFileName = Environment.GetEnvironmentVariable("FOREX_LIST_FILE_NAME");
+
+                CurrencyPairSymbolManager asxetfManager = new CurrencyPairSymbolManager(log);
+
+                string market = "forex";
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                }
+
+                var symbolList = asxetfManager.GetCurrencyPairsFullList(service, rootId, forextFileName);
+
+                return new OkObjectResult(symbolList);
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+        //[FunctionName("test_forex_ticker")]
+        //public static async Task<IActionResult> TestForexTicker(
+        //    [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+        //    HttpRequest req, ILogger log)
+        //{
+        //    string symbol = string.Empty;
+        //    string interval = "d"; // d for daily or w for weekly
+        //    int period = 360; // default for 360
+        //    try
+        //    {
+        //        var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+
+        //        var queryDict = req.GetQueryParameterDictionary();
+
+        //        string output = "json";
+
+
+        //        if (queryDict != null)
+        //        {
+        //            if (queryDict.ContainsKey("output"))
+        //            {
+        //                output = queryDict["output"];
+        //            }
+
+        //            if (queryDict.ContainsKey("symbol"))
+        //            {
+        //                symbol = queryDict["symbol"];
+        //            }
+        //            else
+        //            {
+        //                throw new ArgumentException("symbol is required");
+        //            }
+
+        //            if (queryDict.ContainsKey("interval"))
+        //            {
+        //                interval = queryDict["interval"].ToString().ToLower();
+
+        //                if (interval != "d" && interval != "w")
+        //                {
+        //                    throw new ArgumentException("interval can be either 'd' or 'w'");
+        //                }
+        //            }
+
+        //            string periodString = string.Empty;
+        //            try
+        //            {
+        //                if (queryDict.ContainsKey("period"))
+        //                {
+        //                    periodString = queryDict["period"];
+
+        //                    if (!string.IsNullOrEmpty(periodString))
+        //                    {
+        //                        period = int.Parse(periodString);
+        //                    }
+        //                }
+
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                throw new ArgumentException($"period much be an integer");
+        //            }
+
+        //            YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
+        //            {
+        //                YahooUrlTemplate = yahooUrlTemplate
+        //            }, log);
+
+        //            DateTime end = DateTime.Now.Date;
+        //            DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
+        //            string intervalString = interval == "d" ? "1d" : "1wk";
+
+        //            var tickList = await tickManager.GetEtTickerList(symbol, start, end, intervalString);
+
+        //            return new JsonResult(tickList);
+        //        }
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        log.LogError(ex, "Error arguments in Ticker");
+        //        return new BadRequestObjectResult(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.LogError(ex, "Error in Ticker");
+        //        return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+        //    }
+        //    return new BadRequestObjectResult("Error in get Ticker");
+        //}
 
         //[FunctionName("test_notification")]
         //public async static Task<IActionResult> TestNotification(
@@ -690,7 +725,7 @@ namespace Screen.Function
         //                var service = GetDriveServic();
         //                string etListFileName = Environment.GetEnvironmentVariable("ASX_ETF_LIST_FILE_NAME");
 
-        //                AsxEtfSymbolManager asxetfManager = new AsxEtfSymbolManager(log);
+        //                AsxEtfSymbolManager ibkrSymbolManager = new AsxEtfSymbolManager(log);
 
         //                string market = "forex";
 
@@ -704,7 +739,7 @@ namespace Screen.Function
         //                    }
         //                }
 
-        //                var symbolList = asxetfManager.GetAsxEtfSymbolFullList(service, rootId, etListFileName);
+        //                var symbolList = ibkrSymbolManager.GetAsxEtfSymbolFullList(service, rootId, etListFileName);
 
         //                return new OkObjectResult(symbolList);
         //            }
