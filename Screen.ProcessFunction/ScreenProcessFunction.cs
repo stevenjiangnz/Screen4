@@ -14,6 +14,7 @@ using Screen.Access;
 using Screen.ProcessFunction.etoro;
 using Screen.ProcessFunction.asxetf;
 using Screen.ProcessFunction.forex;
+using Screen.Ticks;
 
 namespace Screen.Function
 {
@@ -245,49 +246,137 @@ namespace Screen.Function
         }
 
 
-
-        [FunctionName("test_us_etf_symbollist")]
-        public static async Task<IActionResult> TestUsEtfSymbolList([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-                HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
+        [FunctionName("test_ibkr_us_etf_ticker")]
+        public static async Task<IActionResult> TestIbkrUsEtfTicker(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req, ILogger log)
         {
+            string symbol = string.Empty;
+            string interval = "d"; // d for daily or w for weekly
+            int period = 360; // default for 360
             try
             {
-                log.LogInformation("in TestUsEtfSymbolList");
-
-                string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
-                var service = GetDriveServic();
-                string forextFileName = Environment.GetEnvironmentVariable("FOREX_LIST_FILE_NAME");
-
-                CurrencyPairSymbolManager asxetfManager = new CurrencyPairSymbolManager(log);
-
-                string market = "forex";
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
 
                 var queryDict = req.GetQueryParameterDictionary();
 
+                string output = "json";
+
+
                 if (queryDict != null)
                 {
-                    if (queryDict.ContainsKey("market"))
+                    if (queryDict.ContainsKey("output"))
                     {
-                        market = queryDict["market"];
+                        output = queryDict["output"];
                     }
+
+                    if (queryDict.ContainsKey("symbol"))
+                    {
+                        symbol = queryDict["symbol"];
+                    }
+                    else
+                    {
+                        throw new ArgumentException("symbol is required");
+                    }
+
+                    if (queryDict.ContainsKey("interval"))
+                    {
+                        interval = queryDict["interval"].ToString().ToLower();
+
+                        if (interval != "d" && interval != "w")
+                        {
+                            throw new ArgumentException("interval can be either 'd' or 'w'");
+                        }
+                    }
+
+                    string periodString = string.Empty;
+                    try
+                    {
+                        if (queryDict.ContainsKey("period"))
+                        {
+                            periodString = queryDict["period"];
+
+                            if (!string.IsNullOrEmpty(periodString))
+                            {
+                                period = int.Parse(periodString);
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgumentException($"period much be an integer");
+                    }
+
+                    YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
+                    {
+                        YahooUrlTemplate = yahooUrlTemplate
+                    }, log);
+
+                    DateTime end = DateTime.Now.Date;
+                    DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
+                    string intervalString = interval == "d" ? "1d" : "1wk";
+
+                    var tickList = await tickManager.GetEtTickerList(symbol, start, end, intervalString);
+
+                    return new JsonResult(tickList);
                 }
-
-                var symbolList = asxetfManager.GetCurrencyPairsFullList(service, rootId, forextFileName);
-
-                return new OkObjectResult(symbolList);
             }
             catch (ArgumentException ex)
             {
-                log.LogError("Error arguments in Process. " + ex.ToString());
+                log.LogError(ex, "Error arguments in Ticker");
                 return new BadRequestObjectResult(ex.Message);
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Error in Process. " + ex.ToString());
+                log.LogError(ex, "Error in Ticker");
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
+            return new BadRequestObjectResult("Error in get Ticker");
         }
 
+
+        //[FunctionName("test_us_etf_symbollist")]
+        //public static async Task<IActionResult> TestUsEtfSymbolList([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+        //        HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
+        //{
+        //    try
+        //    {
+        //        log.LogInformation("in TestUsEtfSymbolList");
+
+        //        string rootId = Environment.GetEnvironmentVariable("GOOGLE_ROOT_ID");
+        //        var service = GetDriveServic();
+        //        string forextFileName = Environment.GetEnvironmentVariable("FOREX_LIST_FILE_NAME");
+
+        //        CurrencyPairSymbolManager asxetfManager = new CurrencyPairSymbolManager(log);
+
+        //        string market = "forex";
+
+        //        var queryDict = req.GetQueryParameterDictionary();
+
+        //        if (queryDict != null)
+        //        {
+        //            if (queryDict.ContainsKey("market"))
+        //            {
+        //                market = queryDict["market"];
+        //            }
+        //        }
+
+        //        var symbolList = asxetfManager.GetCurrencyPairsFullList(service, rootId, forextFileName);
+
+        //        return new OkObjectResult(symbolList);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        log.LogError("Error arguments in Process. " + ex.ToString());
+        //        return new BadRequestObjectResult(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.LogError(ex, "Error in Process. " + ex.ToString());
+        //        return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+        //    }
+        //}
 
         //[FunctionName("test_forex_ticker")]
         //public static async Task<IActionResult> TestForexTicker(
