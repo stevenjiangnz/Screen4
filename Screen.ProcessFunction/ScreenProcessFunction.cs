@@ -15,6 +15,7 @@ using Screen.ProcessFunction.etoro;
 using Screen.ProcessFunction.asxetf;
 using Screen.ProcessFunction.forex;
 using Screen.Ticks;
+using Screen.ProcessFunction.ibkr;
 
 namespace Screen.Function
 {
@@ -142,8 +143,6 @@ namespace Screen.Function
             }
         }
 
-
-
         [FunctionName("etprocess")]
         public static async Task<IActionResult> ETProcess([HttpTrigger(AuthorizationLevel.Function, 
             "get", Route = null)] HttpRequest req, ILogger log)
@@ -198,6 +197,60 @@ namespace Screen.Function
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
+
+
+        [FunctionName("IbkrUsEtfrocess")]
+        public static async Task<IActionResult> IbkrUsEtfrocess([HttpTrigger(AuthorizationLevel.Function,
+            "get", Route = null)] HttpRequest req, ILogger log)
+        {
+            try
+            {
+                log.LogInformation("In IbkrUsEtfrocess");
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+
+                string market = string.Empty;
+                bool verbose = false;
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("market"))
+                    {
+                        market = queryDict["market"];
+                    }
+                    else
+                    {
+                        return new BadRequestObjectResult("querystring market is required. e.g. etf, asx, nyse");
+                    }
+
+                    if (queryDict.ContainsKey("verbose"))
+                    {
+                        if (queryDict["verbose"].ToLower() == "true")
+                        {
+                            verbose = true;
+                        }
+                    }
+                }
+
+                UsEtfMarketProcess eTProcessManager = new UsEtfMarketProcess(log, yahooUrlTemplate);
+
+                var scanResultList = await eTProcessManager.ProcessMarket(market, "1d", verbose);
+
+                return new OkObjectResult(scanResultList);
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError("Error arguments in Process. " + ex.ToString());
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Process. " + ex.ToString());
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+
 
 
         #endregion
@@ -320,6 +373,97 @@ namespace Screen.Function
                     var tickList = await tickManager.GetEtTickerList(symbol, start, end, intervalString);
 
                     return new JsonResult(tickList);
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                log.LogError(ex, "Error arguments in Ticker");
+                return new BadRequestObjectResult(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Ticker");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+            return new BadRequestObjectResult("Error in get Ticker");
+        }
+
+
+        [FunctionName("test_ibkr_process_individual_symbol")]
+        public static async Task<IActionResult> TestIbkrProcessIndividualSymbol(
+    [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req, ILogger log)
+        {
+            string symbol = string.Empty;
+            string interval = "d"; // d for daily or w for weekly
+            int period = 360; // default for 360
+            try
+            {
+                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+
+                var queryDict = req.GetQueryParameterDictionary();
+
+                string output = "json";
+
+                if (queryDict != null)
+                {
+                    if (queryDict.ContainsKey("output"))
+                    {
+                        output = queryDict["output"];
+                    }
+
+                    if (queryDict.ContainsKey("symbol"))
+                    {
+                        symbol = queryDict["symbol"];
+                    }
+                    else
+                    {
+                        throw new ArgumentException("symbol is required");
+                    }
+
+                    if (queryDict.ContainsKey("interval"))
+                    {
+                        interval = queryDict["interval"].ToString().ToLower();
+
+                        if (interval != "d" && interval != "w")
+                        {
+                            throw new ArgumentException("interval can be either 'd' or 'w'");
+                        }
+                    }
+
+                    string periodString = string.Empty;
+                    try
+                    {
+                        if (queryDict.ContainsKey("period"))
+                        {
+                            periodString = queryDict["period"];
+
+                            if (!string.IsNullOrEmpty(periodString))
+                            {
+                                period = int.Parse(periodString);
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgumentException($"period much be an integer");
+                    }
+
+                    UsEtfMarketProcess etfprocess = new UsEtfMarketProcess(log, yahooUrlTemplate);
+                    var scanResult = await etfprocess.ProcessIndividualSymbol(symbol, "1d");
+                    //YahooTickManager tickManager = new YahooTickManager(new Shared.SharedSettings
+                    //{
+                    //    YahooUrlTemplate = yahooUrlTemplate
+                    //}, log);
+
+                    //DateTime end = DateTime.Now.Date;
+                    //DateTime start = interval == "d" ? DateTime.Now.Date.AddDays(-1 * period) : DateTime.Now.Date.AddDays(-7 * period);
+                    //string intervalString = interval == "d" ? "1d" : "1wk";
+
+                    //var tickList = await tickManager.GetEtTickerList(symbol, start, end, intervalString);
+
+                    return new JsonResult(scanResult);
                 }
             }
             catch (ArgumentException ex)

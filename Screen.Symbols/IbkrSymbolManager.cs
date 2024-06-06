@@ -39,6 +39,11 @@ namespace Screen.Symbols
             }
         }
 
+        public List<IbkrEtfSymbolEntity> FilterIbkrUsEtfSymbolList(List<IbkrEtfSymbolEntity> inputIbkrSymbolList)
+        {
+            return inputIbkrSymbolList;
+        }
+
         public List<IbkrEtfSymbolEntity> ConvertCSVToList(string csvContent)
         {
             using (var reader = new StringReader(csvContent))
@@ -68,6 +73,7 @@ namespace Screen.Symbols
                 Map(m => m.Exchange).Name("EXCHANGE");
             }
         }
+
 
     }
 }
