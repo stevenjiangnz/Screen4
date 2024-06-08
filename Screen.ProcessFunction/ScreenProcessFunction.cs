@@ -207,9 +207,11 @@ namespace Screen.Function
             {
                 log.LogInformation("In IbkrUsEtfrocess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
+                var individualProcessUrlTemplate = Environment.GetEnvironmentVariable("AZURE_FUNC_PROCESS_INDIVIDUAL_URL_TEMPLATE");
 
-                string market = string.Empty;
+                string market = string.Empty; 
                 bool verbose = false;
+                int batch = 0;
 
                 var queryDict = req.GetQueryParameterDictionary();
 
@@ -231,11 +233,19 @@ namespace Screen.Function
                             verbose = true;
                         }
                     }
+                    if (queryDict.ContainsKey("batch"))
+                    {
+                        int batchInput;
+                        if (int.TryParse( queryDict["batch"], out batchInput))
+                        {
+                            batch = batchInput;
+                        }
+                    }
                 }
 
-                UsEtfMarketProcess eTProcessManager = new UsEtfMarketProcess(log, yahooUrlTemplate);
+                UsEtfMarketProcess etfProcessManager = new UsEtfMarketProcess(log, yahooUrlTemplate, individualProcessUrlTemplate);
 
-                var scanResultList = await eTProcessManager.ProcessMarket(market, "1d", verbose);
+                var scanResultList = await etfProcessManager.ProcessMarket(market, "1d", verbose, batch);
 
                 return new OkObjectResult(scanResultList);
             }
@@ -250,91 +260,6 @@ namespace Screen.Function
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
-
-
-        [FunctionName("IbkrProcessIndividual")]
-        public static async Task<IActionResult> IbkrProcessIndividual(
-    [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req, ILogger log)
-        {
-            string symbol = string.Empty;
-            string interval = "d"; // d for daily or w for weekly
-            int period = 360; // default for 360
-
-            try
-            {
-                var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
-
-                var queryDict = req.GetQueryParameterDictionary();
-
-                string output = "json";
-
-                if (queryDict != null)
-                {
-                    if (queryDict.ContainsKey("output"))
-                    {
-                        output = queryDict["output"];
-                    }
-
-                    if (queryDict.ContainsKey("symbol"))
-                    {
-                        symbol = queryDict["symbol"];
-                    }
-                    else
-                    {
-                        throw new ArgumentException("symbol is required");
-                    }
-
-                    if (queryDict.ContainsKey("interval"))
-                    {
-                        interval = queryDict["interval"].ToString().ToLower();
-
-                        if (interval != "d" && interval != "w")
-                        {
-                            throw new ArgumentException("interval can be either 'd' or 'w'");
-                        }
-                    }
-
-                    string periodString = string.Empty;
-                    try
-                    {
-                        if (queryDict.ContainsKey("period"))
-                        {
-                            periodString = queryDict["period"];
-
-                            if (!string.IsNullOrEmpty(periodString))
-                            {
-                                period = int.Parse(periodString);
-                            }
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgumentException($"period much be an integer");
-                    }
-
-                    log.LogInformation($"About to IbkrProcessIndividual, symbol: {symbol}, interval: {interval}");
-
-                    UsEtfMarketProcess etfprocess = new UsEtfMarketProcess(log, yahooUrlTemplate);
-                    var scanResult = await etfprocess.ProcessIndividualSymbol(symbol, "1d");
-
-                    return new JsonResult(scanResult);
-                }
-            }
-            catch (ArgumentException ex)
-            {
-                log.LogError(ex, "Error arguments in Ticker");
-                return new BadRequestObjectResult(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "Error in Ticker");
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-            }
-            return new BadRequestObjectResult("Error in get Ticker");
-        }
-
 
         #endregion
 

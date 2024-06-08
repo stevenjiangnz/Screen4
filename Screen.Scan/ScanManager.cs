@@ -472,6 +472,7 @@ double?[] diMinusArray)
 
                 var folderId = GoogleDriveManager.FindOrCreateFolder(service, rootID, folderName);
                 folderId = GoogleDriveManager.FindOrCreateFolder(service, folderId, dateScan.Substring(0,4));
+                folderId = GoogleDriveManager.FindOrCreateFolder(service, folderId, dateScan.Substring(4,2));
 
                 GoogleDriveManager.UploadTextStringToDriveFolder(service, folderId, csvString, fileName);
 
