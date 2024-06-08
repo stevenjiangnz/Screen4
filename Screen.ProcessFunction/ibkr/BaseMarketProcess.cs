@@ -30,6 +30,7 @@ namespace Screen.ProcessFunction.ibkr
         protected string _emailRecipients;
         protected string _individualProcessTemplate;
         protected int _processBatch;
+        protected string FOLDER_NAME = "ibkr";
 
         public BaseMarketProcess(ILogger log, string yahooTemplate, string individualProcessTemplate)
         {
@@ -193,14 +194,14 @@ namespace Screen.ProcessFunction.ibkr
             {
                 filename = $"IBkrScan_{market}-{batch}_{bullResult[0].TradingDate}_bull.csv";
                 await this._scanManager.SaveETScanResult(this._driveService, bullResult,
-                    _googleRootId, filename, "ibkr");
+                    _googleRootId, filename, this.FOLDER_NAME);
             }
 
             if (bearResult != null && bearResult.Count > 0)
             {
                 filename = $"IBkrScan_{market}-{batch}_{bearResult[0].TradingDate}_bear.csv";
                 await this._scanManager.SaveETScanResult(this._driveService, bearResult,
-                    _googleRootId, filename, "ibkr");
+                    _googleRootId, filename, this.FOLDER_NAME);
             }
         }
 
