@@ -207,7 +207,6 @@ namespace Screen.Function
             {
                 log.LogInformation("In IbkrUsEtfrocess");
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
-                var individualProcessUrlTemplate = Environment.GetEnvironmentVariable("AZURE_FUNC_PROCESS_INDIVIDUAL_URL_TEMPLATE");
 
                 string market = string.Empty; 
                 bool verbose = false;
@@ -243,7 +242,7 @@ namespace Screen.Function
                     }
                 }
 
-                UsEtfMarketProcess etfProcessManager = new UsEtfMarketProcess(log, yahooUrlTemplate, individualProcessUrlTemplate);
+                UsEtfMarketProcess etfProcessManager = new UsEtfMarketProcess(log, yahooUrlTemplate);
 
                 var scanResultList = await etfProcessManager.ProcessMarket(market, "1d", verbose, batch);
 

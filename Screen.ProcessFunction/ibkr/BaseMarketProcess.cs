@@ -28,11 +28,10 @@ namespace Screen.ProcessFunction.ibkr
         protected string _etListFileName;
         protected string _emailSender;
         protected string _emailRecipients;
-        protected string _individualProcessTemplate;
         protected int _processBatch;
         protected string FOLDER_NAME = "ibkr";
 
-        public BaseMarketProcess(ILogger log, string yahooTemplate, string individualProcessTemplate)
+        public BaseMarketProcess(ILogger log, string yahooTemplate)
         {
             this._logger = log;
 
@@ -44,7 +43,6 @@ namespace Screen.ProcessFunction.ibkr
             this._indicatorManager = new IndicatorManager();
             this._symbolManager = new IbkrSymbolManager(log);
             this._scanManager = new ScanManager(log);
-            this._individualProcessTemplate = individualProcessTemplate;
 
             init();
         }
