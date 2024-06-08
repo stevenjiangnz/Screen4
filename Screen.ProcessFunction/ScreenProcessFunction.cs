@@ -260,6 +260,7 @@ namespace Screen.Function
             string symbol = string.Empty;
             string interval = "d"; // d for daily or w for weekly
             int period = 360; // default for 360
+
             try
             {
                 var yahooUrlTemplate = Environment.GetEnvironmentVariable("YAHOO_URL_TEMPLATE");
@@ -312,6 +313,8 @@ namespace Screen.Function
                     {
                         throw new ArgumentException($"period much be an integer");
                     }
+
+                    log.LogInformation($"About to IbkrProcessIndividual, symbol: {symbol}, interval: {interval}");
 
                     UsEtfMarketProcess etfprocess = new UsEtfMarketProcess(log, yahooUrlTemplate);
                     var scanResult = await etfprocess.ProcessIndividualSymbol(symbol, "1d");
