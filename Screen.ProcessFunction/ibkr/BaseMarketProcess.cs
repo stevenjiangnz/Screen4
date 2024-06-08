@@ -28,6 +28,8 @@ namespace Screen.ProcessFunction.ibkr
         protected string _etListFileName;
         protected string _emailSender;
         protected string _emailRecipients;
+        protected int _processBatch;
+        protected string FOLDER_NAME = "ibkr";
 
         public BaseMarketProcess(ILogger log, string yahooTemplate)
         {
@@ -57,11 +59,11 @@ namespace Screen.ProcessFunction.ibkr
             var emailApiSecret = Environment.GetEnvironmentVariable("EMAIL_API_SECRET");
             this._emailSender = Environment.GetEnvironmentVariable("EMAIL_SENDER");
             this._emailRecipients = Environment.GetEnvironmentVariable("EMAIL_RECIPIENTS");
-
+            this._processBatch = int.Parse(Environment.GetEnvironmentVariable("PROCESS_BATCH"));
             this._notificationManager = new NotificationManager(emailApiKey, emailApiSecret, this._logger);
         }
 
-        public async Task<ScanResultEntity> ProcessIndividualSymbol(string symbol,
+        public async Task<ScanResultEntity> ProcessIndividualSymbol(IbkrEtfSymbolEntity symbol,
              string interval)
         {
             List<ScanResultEntity> scanResults = new List<ScanResultEntity>();
@@ -70,22 +72,22 @@ namespace Screen.ProcessFunction.ibkr
 
             try
             {
-                var tickList = await this._tickerManager.GetEtTickerList(symbol,
+                var tickList = await this._tickerManager.GetEtTickerList(symbol.Symbol,
                     DateTime.Now.Date.AddMonths(-1 * periodInMonth),
                     DateTime.Now.Date.AddDays(1),
                     interval);
 
                 this._logger.LogDebug($"After retrieving for {symbol}, return ticks {tickList.Count}");
 
-                var indList = this._indicatorManager.CalculateIndicators(symbol, tickList);
+                var indList = this._indicatorManager.CalculateIndicators(symbol.Symbol, tickList);
 
                 if (indList != null)
                 {
-                    this._logger.LogDebug($"After calculate indicators for symbol {symbol}, count: {indList.Count}");
+                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.Symbol}, count: {indList.Count}");
                 }
                 else
                 {
-                    this._logger.LogDebug($"After calculate indicators for symbol {symbol}, count: 0, return null from ticker");
+                    this._logger.LogDebug($"After calculate indicators for symbol {symbol.Symbol}, count: 0, return null from ticker");
                 }
 
                 scanResults = (List<ScanResultEntity>)this._scanManager.ProcessScan(indList);
@@ -99,9 +101,9 @@ namespace Screen.ProcessFunction.ibkr
                     {
                         scanResults[0].Price = lastTick.C;
                         scanResults[0].Volume = lastTick.V;
-                        //scanResults[0].Exposure = symbol.Exposure;
-                        //scanResults[0].Benchmark = symbol.Benchmark;
-                        //scanResults[0].InvestmentStyle = symbol.InvestmentStyle;
+                        scanResults[0].Exposure = symbol.Description;
+                        scanResults[0].Benchmark = symbol.Currency;
+                        scanResults[0].InvestmentStyle = symbol.Region;
                     }
                 }
             }
@@ -161,13 +163,13 @@ namespace Screen.ProcessFunction.ibkr
             return checkedResult;
         }
 
-        public async Task SendNotificationScanResult(string market, List<ScanResultEntity> bullResult, List<ScanResultEntity> bearResult)
+        public async Task SendNotificationScanResult(string market, List<ScanResultEntity> bullResult, List<ScanResultEntity> bearResult, int batch)
         {
             string filename = string.Empty;
 
             if (bullResult != null && bullResult.Count > 0)
             {
-                var subject = $"IBkrScan_{market}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
+                var subject = $"IBkrScan_{market}-{batch}_(BULL)_{bullResult[0].TradingDate}-({bullResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(bullResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
@@ -175,33 +177,33 @@ namespace Screen.ProcessFunction.ibkr
 
             if (bearResult != null && bearResult.Count > 0)
             {
-                var subject = $"IBkrScan_{market}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
+                var subject = $"IBkrScan_{market}-{batch}_(BEAR)_{bearResult[0].TradingDate}-({bearResult.Count})";
                 var body = ScanManager.ConvertToCsv<ScanResultEntity>(bearResult);
 
                 await this._notificationManager.SendNotificationEmail(this._emailSender, this._emailRecipients, subject, body);
             }
         }
 
-        public async Task SaveScanResult(string market, List<ScanResultEntity> bullResult, List<ScanResultEntity> bearResult)
+        public async Task SaveScanResult(string market, List<ScanResultEntity> bullResult, List<ScanResultEntity> bearResult, int batch)
         {
             string filename = string.Empty;
 
             if (bullResult != null && bullResult.Count > 0)
             {
-                filename = $"IBkrScan_{market}_{bullResult[0].TradingDate}_bull.csv";
+                filename = $"IBkrScan_{market}-{batch}_{bullResult[0].TradingDate}_bull.csv";
                 await this._scanManager.SaveETScanResult(this._driveService, bullResult,
-                    _googleRootId, filename);
+                    _googleRootId, filename, this.FOLDER_NAME);
             }
 
             if (bearResult != null && bearResult.Count > 0)
             {
-                filename = $"IBkrScan_{market}_{bearResult[0].TradingDate}_bear.csv";
+                filename = $"IBkrScan_{market}-{batch}_{bearResult[0].TradingDate}_bear.csv";
                 await this._scanManager.SaveETScanResult(this._driveService, bearResult,
-                    _googleRootId, filename);
+                    _googleRootId, filename, this.FOLDER_NAME);
             }
         }
 
-        public virtual async Task<List<ScanResultEntity>> ProcessMarket(string market, string interval = "1d", bool verbose = false)
+        public virtual async Task<List<ScanResultEntity>> ProcessMarket(string market, string interval = "1d", bool verbose = false, int batch = 0)
         {
             List<ScanResultEntity> bullResultList = new List<ScanResultEntity>();
             List<ScanResultEntity> bearResultList = new List<ScanResultEntity>();
@@ -209,29 +211,40 @@ namespace Screen.ProcessFunction.ibkr
             {
                 List<IbkrEtfSymbolEntity> symbolList = this._symbolManager.GetSymbolList(_driveService, this._googleRootId, this._etListFileName);
 
-                symbolList = FilterSymbols(symbolList);
+                symbolList = FilterSymbols(symbolList, batch);
 
-                this._logger.LogInformation($"after retrieve symbol for {market}, returned items {symbolList.Count}");
+                this._logger.LogInformation($"After retrieve symbol for {market}, returned items {symbolList.Count}");
 
-                // process each symbol
-                foreach (IbkrEtfSymbolEntity symbol in symbolList)
+                const int batchSize = 10;
+                int numberOfBatches = (symbolList.Count + batchSize - 1) / batchSize;
+
+                int processedSymbolsCount = 0; // To keep track of the total number of processed symbols
+
+                for (int i = 0; i < numberOfBatches; i++)
                 {
-                    symbol.Symbol = PrepareSymbol(symbol.Symbol);
+                    // Get the current batch of symbols
+                    var currentBatch = symbolList.Skip(i * batchSize).Take(batchSize).ToList();
 
-                    var scanResult = await this.ProcessIndividualSymbol(symbol.Symbol, interval);
+                    // Prepare a list of tasks for parallel processing of the current batch of symbols
+                    var tasks = currentBatch.Select(symbol => ProcessSymbolAsync(symbol, interval, verbose)).ToList();
 
-                    if (scanResult != null)
+                    // Await all tasks to complete
+                    var results = await Task.WhenAll(tasks);
+
+                    // Update processed symbols count and log it
+                    processedSymbolsCount += currentBatch.Count;
+                    this._logger.LogInformation($"Processed {processedSymbolsCount} of {symbolList.Count} symbols so far.");
+
+                    // Process the results
+                    foreach (var scanResult in results)
                     {
-                        var bullResult = this.IsBullResult(scanResult, verbose);
-                        if (bullResult != null)
+                        if (scanResult.bullResult != null)
                         {
-                            bullResultList.Add(bullResult);
+                            bullResultList.Add(scanResult.bullResult);
                         }
-
-                        var bearResult = this.IsBearResult(scanResult, verbose);
-                        if (bearResult != null)
+                        if (scanResult.bearResult != null)
                         {
-                            bearResultList.Add(bearResult);
+                            bearResultList.Add(scanResult.bearResult);
                         }
                     }
                 }
@@ -240,10 +253,10 @@ namespace Screen.ProcessFunction.ibkr
                 bearResultList = bearResultList.OrderBy(b => b.Symbol).ToList();
 
                 // Send notification scan result
-                await this.SendNotificationScanResult(market, bullResultList, bearResultList);
+                await this.SendNotificationScanResult(market, bullResultList, bearResultList, batch);
 
                 // Save to google drive
-                await this.SaveScanResult(market, bullResultList, bearResultList);
+                await this.SaveScanResult(market, bullResultList, bearResultList, batch);
 
                 return bullResultList.Concat(bearResultList).ToList();
             }
@@ -254,8 +267,23 @@ namespace Screen.ProcessFunction.ibkr
             }
         }
 
+        protected virtual async Task<(ScanResultEntity bullResult, ScanResultEntity bearResult)> ProcessSymbolAsync(IbkrEtfSymbolEntity symbol, string interval, bool verbose)
+        {
+            symbol.Symbol = PrepareSymbol(symbol.Symbol);
+            var scanResult = await this.ProcessIndividualSymbol(symbol, interval);
+            ScanResultEntity bullResult = null;
+            ScanResultEntity bearResult = null;
+            if (scanResult != null)
+            {
+                bullResult = this.IsBullResult(scanResult, verbose);
+                bearResult = this.IsBearResult(scanResult, verbose);
+            }
+            return (bullResult, bearResult);
+        }
+
+
         // The methods below can be overridden by child classes
-        public abstract List<IbkrEtfSymbolEntity> FilterSymbols(List<IbkrEtfSymbolEntity> symbolList);
+        public abstract List<IbkrEtfSymbolEntity> FilterSymbols(List<IbkrEtfSymbolEntity> symbolList, int batch);
         public abstract string PrepareSymbol(string symbol);
         public abstract string GetSymbolListFileName();
     }

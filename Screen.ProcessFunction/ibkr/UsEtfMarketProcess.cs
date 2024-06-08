@@ -10,12 +10,12 @@ namespace Screen.ProcessFunction.ibkr
 {
     public class UsEtfMarketProcess : BaseMarketProcess
     {
-        public UsEtfMarketProcess(ILogger log, string yahooTemplate): base(log, yahooTemplate) { 
+        public UsEtfMarketProcess(ILogger log, string yahooTemplate) : base(log, yahooTemplate) { 
         }
 
-        public override List<IbkrEtfSymbolEntity> FilterSymbols(List<IbkrEtfSymbolEntity> symbolList)
+        public override List<IbkrEtfSymbolEntity> FilterSymbols(List<IbkrEtfSymbolEntity> symbolList, int batch)
         {
-            return this._symbolManager.FilterIbkrUsEtfSymbolList(symbolList);
+            return this._symbolManager.FilterIbkrUsEtfSymbolList(symbolList, batch, this._processBatch);
         }
 
         public override string PrepareSymbol(string symbol)

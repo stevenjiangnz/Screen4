@@ -39,9 +39,10 @@ namespace Screen.Symbols
             }
         }
 
-        public List<IbkrEtfSymbolEntity> FilterIbkrUsEtfSymbolList(List<IbkrEtfSymbolEntity> inputIbkrSymbolList)
+        public List<IbkrEtfSymbolEntity> FilterIbkrUsEtfSymbolList(List<IbkrEtfSymbolEntity> inputIbkrSymbolList, int batch, int size)
         {
-            return inputIbkrSymbolList;
+            int startIndex = batch * size; // Calculate the start index for the batch
+            return inputIbkrSymbolList.Skip(startIndex).Take(size).ToList(); // Skip to the start of the desired batch and take the number of items specified by size
         }
 
         public List<IbkrEtfSymbolEntity> ConvertCSVToList(string csvContent)
