@@ -17,14 +17,6 @@ namespace Screen.Notification
             this._log = logger;
         }
 
-        public bool ShouldNotifyExtraRecipient()
-        {
-            var notify = Environment.GetEnvironmentVariable("NOTIFY_EXTRA_RECIPIENT");
-            return notify != null && ("true".Equals(notify, StringComparison.OrdinalIgnoreCase) ||
-                                      "1".Equals(notify) ||
-                                      "yes".Equals(notify, StringComparison.OrdinalIgnoreCase));
-        }
-
         public async Task SendNotificationEmail(string sender, string recipients, string subject, string csvContent)
         {
             // Clean and convert the CSV content

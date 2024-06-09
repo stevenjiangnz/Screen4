@@ -29,9 +29,7 @@ namespace Screen.ProcessFunction.asxetf
         protected string _asxEtfListFileName;
         protected string _emailSender;
         protected string _emailRecipients;
-        private string EXTRA_EAMIL_RECEIVE = "steven.jiang@shell.com";
         IMapper _mapper;
-
 
         public AsxEtfProcess(ILogger log, string yahooTemplate)
         {
@@ -56,22 +54,12 @@ namespace Screen.ProcessFunction.asxetf
             string serviceAccountKeyJson = Environment.GetEnvironmentVariable("GoogleServiceAccountKey");
             this._driveService = GoogleDriveManager.GetDriveServic(serviceAccountKeyJson);
 
-
             var emailApiKey = Environment.GetEnvironmentVariable("EMAIL_API_KEY");
             var emailApiSecret = Environment.GetEnvironmentVariable("EMAIL_API_SECRET");
             this._emailSender = Environment.GetEnvironmentVariable("EMAIL_SENDER");
-
             this._emailRecipients = Environment.GetEnvironmentVariable("EMAIL_RECIPIENTS");
 
             this._notificationManager = new NotificationManager(emailApiKey, emailApiSecret, this._logger);
-
-            bool shouldNotifiyExtra = _notificationManager.ShouldNotifyExtraRecipient();
-
-            if (shouldNotifiyExtra)
-            {
-                this._emailRecipients +=  ";" + EXTRA_EAMIL_RECEIVE;
-            }
-
 
             var config = new MapperConfiguration(cfg =>
             {

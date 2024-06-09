@@ -65,14 +65,6 @@ namespace Screen.ProcessFunction.forex
 
             this._notificationManager = new NotificationManager(emailApiKey, emailApiSecret, this._logger);
 
-            bool shouldNotifiyExtra = _notificationManager.ShouldNotifyExtraRecipient();
-
-            if (shouldNotifiyExtra)
-            {
-                this._emailRecipients += ";" + EXTRA_EAMIL_RECEIVE;
-            }
-
-
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new MappingProfile());
